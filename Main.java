@@ -63,7 +63,8 @@ public class Main {
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////
         if ( newAccount.isLogged() ) {
-            if (newAccount instanceof Teacher teacher) {
+            if (newAccount instanceof Teacher) {
+                Teacher teacher = new Teacher(newAccount.getUsername(), true);
                 int option;
 
                 do {
