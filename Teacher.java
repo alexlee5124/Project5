@@ -1,5 +1,6 @@
 import java.io.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -17,6 +18,42 @@ public class Teacher extends Account {
     public Teacher(String username, boolean isLogged) throws FileNotFoundException {
         super(username, isLogged);
     }
+    Tools tools = new Tools();
+
+    /** Retrieve quizzes from text file and save it as an array
+     * CS1800 Spring 2022, Project 4
+     * @author Alex Lee
+     * @version 4/10/2022
+     */
+    public Quiz[] retrieveQuizzes() {
+        String quizFile = tools.loadTextFile("Quiz.txt");
+        String[] quizzesString = quizFile.split("/");
+        Quiz[] quizzes = new Quiz[quizzesString.length];
+        for ( int i = 0 ; i < quizzes.length ; i++ ) {
+            int quizID = Integer.parseInt((quizzesString[i].split(":"))[0]);
+            int numberQuestions = Integer.parseInt((quizzesString[i].split(":"))[1]);
+            int[] questionPoints = new int[numberQuestions];
+            for ( int j = 0 ; j < numberQuestions ; j++ ) {
+                questionPoints[j] = Integer.parseInt(((quizzesString[i].split(":"))[2]).split(",")[j]);
+            }
+            String deadlineString = (quizzesString[i].split(":")[3]);
+            deadlineString = String.format("%s-%s-%s %s:%s", deadlineString.split("-")[0],
+                    deadlineString.split("-")[1], deadlineString.split("-")[2],
+                    deadlineString.split("-")[3], deadlineString.split("-")[4]);
+            DateTimeFormatter deadlineFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            LocalDateTime deadline = LocalDateTime.parse( deadlineString, deadlineFormat );
+            int duration = Integer.parseInt((quizzesString[i].split(":"))[4]);
+            int totalPoints = Integer.parseInt((quizzesString[i].split(":"))[5]);
+            int[] questionsIndex = new int[numberQuestions];
+            for ( int j = 0 ; j < numberQuestions ; j++ ) {
+                questionsIndex[j] = Integer.parseInt((quizzesString[i].split(":"))[6].split(",")[j]);
+            }
+            Quiz quiz = new Quiz(quizID, numberQuestions, deadline,
+                    duration, totalPoints, questionsIndex, questionPoints);
+            quizzes[i] = quiz;
+        }
+        return quizzes;
+    }
 
     /** Retrieve the questions from the text file and save it into a Question array
      * CS1800 Spring 2022, Project 4
@@ -24,21 +61,17 @@ public class Teacher extends Account {
      * @version 4/9/2022
      */
     public Question[] retrieveQuestions() {
-        ArrayList<String> questionsList = new ArrayList<String>();
-        try (BufferedReader bfr = new BufferedReader(new FileReader("Questions.txt"))) {
-            String line;
-            while ((line = bfr.readLine()) != null) {
-                questionsList.add(line);
-            }
-        } catch (IOException ie) {
-            System.out.println("Either the file doesn't exist or the file is in the wrong format!");
-        }
+        String questionFile = tools.loadTextFile("Questions.txt");
+        String[] lines = questionFile.split("/");
+        Question[] questions = new Question[lines.length];
 
-        Question[] questions = new Question[questionsList.size()];
-        for (int i = 0; i < questionsList.size(); i++) {
-            String prompt = (questionsList.get(i).split(","))[0];
-            String answer = (questionsList.get(i).split(","))[1];
-            Question question = new Question(0, prompt, answer);
+        for (int i = 0 ; i < lines.length; i++) {
+            String[] elements = lines[i].split(",");
+            System.out.printf("TEST ELEMENTS LENGTH: %d\n", elements.length);
+            String prompt = elements[0];
+            String answer = elements[1];
+            String questionType = elements[2];
+            Question question = new Question(prompt, answer, questionType);
             questions[i] = question;
         }
         return questions;
@@ -53,31 +86,24 @@ public class Teacher extends Account {
         // create a random questions array from question pool
         Question[] questionPool = retrieveQuestions();
         if ( questionPool.length < numberQuestions ) {
-            System.out.println("Error creating quiz. Please check the question pool!");
+            System.out.println("The desired number of questions is greater than the number of questions" +
+                    "in the question pool! Please update your question pool!");
         } else {
-            int[] questionsIndex = new int[ numberQuestions ];
-            ArrayList<Integer> randomGenerator = new ArrayList<>();
-            for ( int i = 0 ; i < questionPool.length ; i++ ) {
-                randomGenerator.add(i);
-            }
-            Collections.shuffle(randomGenerator);
-            for ( int i = 0 ; i < numberQuestions ; i++ ) {
-                questionsIndex[i] = randomGenerator.get(i);
-            }
+            int[] questionsIndex = tools.randomGenerator(questionPool.length, numberQuestions);
             // prompt teacher for the point value of each question and record each question point values
             int totalPoints = 0;
             int[] questionPoints = new int[numberQuestions];
             for ( int i = 0 ; i < numberQuestions ; i++ ) {
                 System.out.printf("How many points is question %d worth?\n", i + 1);
-                int point = scan.nextInt();
-                scan.nextLine();
+                int point = tools.receiveValidInt(1, scan);
                 questionPoints[i] = point;
                 totalPoints = totalPoints + point;
             }
             // create randomized quiz and output it to quiz file
-            Quiz randomQuiz = new Quiz( numberQuestions, deadline, duration, totalPoints, questionsIndex, questionPoints );
-            randomQuiz.writeQuiz();
-            System.out.println("Quiz created!");
+            Quiz randomQuiz = new Quiz( numberQuestions, deadline,
+                    duration, totalPoints, questionsIndex, questionPoints );
+            randomQuiz.writeNewQuiz();
+            System.out.println("Random quiz successfully created!");
         }
     }
 
@@ -93,50 +119,47 @@ public class Teacher extends Account {
             questionsIndex[i]--;
         }
         if ( questionPool.length < numberQuestions ) {
-            System.out.println("Error creating quiz. Please check the question pool!");
+            System.out.println("The desired number of questions is greater than the number of questions" +
+                    "in the question pool! Please update your question pool!");
         } else {
             // prompt teacher for the point value of each question and record each question point values
             int totalPoints = 0;
             int[] questionPoints = new int[numberQuestions];
             for ( int i = 0 ; i < numberQuestions ; i++ ) {
                 System.out.printf("How many points is question %d worth?\n", i + 1);
-                int point = scan.nextInt();
-                scan.nextLine();
+                int point = tools.receiveValidInt(1, scan);
                 questionPoints[i] = point;
                 totalPoints = totalPoints + point;
             }
             // create randomized quiz and output it to quiz file
-            Quiz customQuiz = new Quiz( numberQuestions, deadline, duration, totalPoints, questionsIndex, questionPoints );
-            customQuiz.writeQuiz();
-            System.out.println("Quiz created!");
+            Quiz customQuiz = new Quiz( numberQuestions, deadline, duration,
+                    totalPoints, questionsIndex, questionPoints );
+            customQuiz.writeNewQuiz();
+            System.out.println("Custom quiz successfully created!");
         }
     }
 
-    /** Delete deisred quiz
+    /** Delete desired quiz
      * CS1800 Spring 2022, Project 4
      * @author Alex Lee
      * @version 4/11/2022
      */
-    public void deleteQuiz( int quizID ) {
-        ArrayList<String> quizList = new ArrayList<String>();
-        try (BufferedReader bfr = new BufferedReader(new FileReader("Quiz.txt"))) {
-            String line;
-            while ((line = bfr.readLine()) != null) {
-                quizList.add(line);
-            }
-        } catch (IOException ie) {
-            System.out.println("Either the file doesn't exist or the file is in the wrong format!");
-        }
-        String[] quizzes = new String[quizList.size()];
+    public void deleteQuiz( int wantedID ) {
+        String quizFile = tools.loadTextFile("Quiz.txt");
+        String[] quizzes = quizFile.split("/");
+        ArrayList<String> quizList = new ArrayList<>();
+        Collections.addAll(quizList, quizzes);
+
         boolean exists = false;
         int quizIndex = 0;
         for ( int i = 0 ; i < quizzes.length ; i++ ) {
-            int ID = Integer.parseInt(quizList.get(i).split(":")[0]);
-            if ( ID == quizID ) {
+            int ID = Integer.parseInt(quizzes[i].split(":")[0]);
+            if ( ID == wantedID ) {
                 exists = true;
                 quizIndex = i;
             }
         }
+
         if ( exists ) {
             quizList.remove(quizIndex);
             try {
@@ -146,7 +169,7 @@ public class Teacher extends Account {
                 }
                 out.close();
             } catch (Exception e) {
-                System.out.println("ERROR DELETING QUIZ");
+                System.out.println("ERROR DELETING QUIZ!");
             }
             System.out.println("Quiz deleted!");
         } else {
@@ -163,48 +186,81 @@ public class Teacher extends Account {
         questionIndex--;
         // retrieve question pool and convert it to arraylist
         Question[] previousQuestions = retrieveQuestions();
-        ArrayList<Question> updatedQuestionsList = new ArrayList<>();
-        for (int i = 0; i < previousQuestions.length; i++) {
-            updatedQuestionsList.add(previousQuestions[i]);
-        }
-        // remove the desired question and convert it back to array
-        updatedQuestionsList.remove(questionIndex);
-        Question[] updatedQuestions = new Question[updatedQuestionsList.size()];
-        for (int i = 0; i < updatedQuestions.length; i++) {
-            updatedQuestions[i] = updatedQuestionsList.get(i);
-        }
-
-        // rewrite the updated question pool out to the text file
-        PrintWriter out;
-        try {
-            out = new PrintWriter(new FileOutputStream("Questions.txt", false));
+        if (questionIndex > previousQuestions.length) {
+            System.out.println("The question doesn't exist. Please check the question pool!");
+        } else {
+            ArrayList<Question> updatedQuestionsList = new ArrayList<>();
+            Collections.addAll(updatedQuestionsList, previousQuestions);
+            // remove the desired question and convert it back to array
+            updatedQuestionsList.remove(questionIndex);
+            Question[] updatedQuestions = new Question[updatedQuestionsList.size()];
             for (int i = 0; i < updatedQuestions.length; i++) {
-                out.println(updatedQuestions[i].toString());
+                updatedQuestions[i] = updatedQuestionsList.get(i);
             }
-            out.close();
-            System.out.println("Question deleted!");
-        } catch (Exception e) {
-            System.out.println("ERROR CREATING NEW ACCOUNT");
+            // rewrite the updated question pool out to the text file
+            try {
+                PrintWriter out = new PrintWriter(new FileOutputStream("Questions.txt", false));
+                for (int i = 0; i < updatedQuestions.length; i++) {
+                    out.println(updatedQuestions[i].toString());
+                }
+                out.close();
+                System.out.println("Question deleted!");
+            } catch (Exception e) {
+                System.out.println("ERROR DELETING QUESTION!");
+            }
         }
     }
-    /** Receive question prompt, answer, and point value from the user and append it to the questions text file
+
+    /** Retrieve the current size of quesiton pool
+     * CS1800 Spring 2022, Project 4
+     * @author Alex Lee
+     * @version 4/15/2022
+     */
+    public int getQuestionPoolSize() {
+        int size = 0;
+        String questionFile = tools.loadTextFile("Questions.txt");
+        String[] lines = questionFile.split("/");
+        return lines.length;
+    }
+
+
+    /** Receive question prompt and answer from the user and append it to the questions text file
      * CS1800 Spring 2022, Project 4
      * @author Alex Lee
      * @version 4/9/2022
      */
-    public void addQuestion(int pointValue, String prompt, String answer) {
-        Question question = new Question(pointValue, prompt, answer);
-        PrintWriter out;
+    public void addResponseQuestion(String prompt, String answer) {
+        Question question = new Question(prompt, answer, "R");
         try {
-            out = new PrintWriter(new FileOutputStream("Questions.txt", true));
-            out.println(question.toString());
+            PrintWriter out = new PrintWriter(new FileOutputStream("Questions.txt", true));
+            out.println(question);
             out.close();
             System.out.println("Question added!");
         } catch (Exception e) {
-            System.out.println("ERROR OUTPUTTING NEW QUESTION");
+            System.out.println("ERROR RECORDING NEW QUESTION");
         }
 
     }
+
+
+    public void addMultipleQuestion(String prompt, String answer, String[] optionPrompts) {
+        Question question = new Question(prompt, answer, "M");
+        for ( int i = 0 ; i < optionPrompts.length ; i++) {
+            prompt += String.format(":%s", optionPrompts[i]);
+        }
+        question.setPrompt(prompt);
+        try {
+            PrintWriter out = new PrintWriter(new FileOutputStream("Questions.txt", true));
+            out.println(question);
+            out.close();
+            System.out.println("Question added!");
+        } catch (Exception e) {
+            System.out.println("ERROR RECORDING NEW QUESTION");
+        }
+
+    }
+
+
     /** Modify question prompt
      * CS1800 Spring 2022, Project 4
      * @author Alex Lee
@@ -214,24 +270,24 @@ public class Teacher extends Account {
         questionNumber--;
         // retrieve question pool
         Question[] questions = retrieveQuestions();
-
-        // modify question prompt
-        questions[questionNumber].setPrompt(newPrompt);
-
-        // output modified question pool
-        PrintWriter out;
-        try {
-            out = new PrintWriter(new FileOutputStream("Questions.txt", false));
-            for (int i = 0; i < questions.length; i++) {
-                out.println(questions[i].toString());
+        if (questionNumber > questions.length) {
+            System.out.println("The question doesn't exist. Please check the question pool!");
+        } else {
+            // modify question prompt
+            questions[questionNumber].setPrompt(newPrompt);
+            // output modified question pool
+            PrintWriter out;
+            try {
+                out = new PrintWriter(new FileOutputStream("Questions.txt", false));
+                for (int i = 0; i < questions.length; i++) {
+                    out.println(questions[i].toString());
+                }
+                out.close();
+                System.out.println("Prompt modified!");
+            } catch (Exception e) {
+                System.out.println("ERROR MODIFYING PROMPT!");
             }
-            out.close();
-            System.out.println("Prompt modified!");
-        } catch (Exception e) {
-            System.out.println("ERROR CREATING NEW ACCOUNT");
         }
-
-
     }
     /** Modify question answer
      * CS1800 Spring 2022, Project 4
@@ -243,70 +299,36 @@ public class Teacher extends Account {
         // retrieve question pool
         Question[] questions = retrieveQuestions();
 
-        // modify question prompt
-        questions[questionNumber].setAnswer(newAnswer);
-
-        // output modified question pool
-        PrintWriter out;
-        try {
-            out = new PrintWriter(new FileOutputStream("Questions.txt", false));
-            for (int i = 0; i < questions.length; i++) {
-                out.println(questions[i].toString());
+        if (questionNumber > questions.length) {
+            System.out.println("The question doesn't exist. Please check the question pool!");
+        } else {
+            // modify question answer
+            questions[questionNumber].setAnswer(newAnswer);
+            // output modified question pool
+            PrintWriter out;
+            try {
+                out = new PrintWriter(new FileOutputStream("Questions.txt", false));
+                for (int i = 0; i < questions.length; i++) {
+                    out.println(questions[i].toString());
+                }
+                out.close();
+                System.out.println("Answer modified!");
+            } catch (Exception e) {
+                System.out.println("ERROR MODIFYING ANSWER!");
             }
-            out.close();
-            System.out.println("Answer modified!");
-        } catch (Exception e) {
-            System.out.println("ERROR CREATING NEW ACCOUNT");
-        }
-    }
-    /** Modify question point value
-     * CS1800 Spring 2022, Project 4
-     * @author Alex Lee
-     * @version 4/9/2022
-     */
-    public void modifyQuestionPoint(int questionNumber, int newPoint) {
-        questionNumber--;
-        // retrieve question pool
-        Question[] questions = retrieveQuestions();
-
-        // modify question prompt
-        questions[questionNumber].setPointValue(newPoint);
-
-        // output modified question pool
-        PrintWriter out;
-        try {
-            out = new PrintWriter(new FileOutputStream("Questions.txt", false));
-            for (int i = 0; i < questions.length; i++) {
-                out.println(questions[i].toString());
-            }
-            out.close();
-            System.out.println("Point value modified!");
-        } catch (Exception e) {
-            System.out.println("ERROR CREATING NEW ACCOUNT");
         }
     }
 
-    public String loadGrade( String username, int QuizID ) {
+    public String[] loadGrade( String studentUsername, int wantedID ) {
         String grade = null;
+        String timestamp = null;
+        String[] gradeAndTime = null;
+        boolean studentExists = false;
 
-        ArrayList<String> grades= new ArrayList<String>();
-        try (BufferedReader bfr = new BufferedReader(new FileReader("Grades.txt"))) {
-            String line;
-            while ((line = bfr.readLine()) != null) {
-                grades.add(line);
-            }
-        } catch (IOException ie) {
-            System.out.println("Either the file doesn't exist or the file is in the wrong format!");
-        }
-
-        String entireFile = "";
-        for ( int i = 0 ; i < grades.size() ; i++ ) {
-            entireFile += grades.get(i);
-        }
-
-        String[] allGrades = entireFile.split("/");
-
+        String gradesFile = tools.loadTextFile("Grades.txt");
+        String[] allGrades = gradesFile.split("/");
         String[] usernames = new String[allGrades.length];
+
         String[] studentsGrades = new String[allGrades.length];
         for ( int i = 0 ; i < allGrades.length ; i ++ ) {
             usernames[i] = allGrades[i].split("-")[0];
@@ -315,25 +337,58 @@ public class Teacher extends Account {
 
         int studentIndex = 0;
         for ( int i = 0 ; i < usernames.length ; i++ ) {
-            if ( usernames[i].equals(username)) {
+            if ( usernames[i].equals(studentUsername)) {
                 studentIndex = i;
+                studentExists = true;
             }
         }
-
-        int quizIndex = 0;
         boolean quizTaken = false;
-        String[] thisStudentGrades = studentsGrades[studentIndex].split(",");
-        for ( int i = 0 ; i < thisStudentGrades.length ; i++ ) {
-            String quizID = thisStudentGrades[i].split(":")[0];
-            if ( Integer.parseInt(quizID) == QuizID ) {
-                quizIndex = i;
-                quizTaken = true;
+        if (studentExists) {
+            String[] thisStudentGrades = studentsGrades[studentIndex].split(",");
+            for ( int i = 1 ; i < thisStudentGrades.length ; i++ ) {
+                String takenQuizID = thisStudentGrades[i].split(":")[0];
+                if ( Integer.parseInt(takenQuizID) == wantedID ) {
+                    grade = (thisStudentGrades[i].split(":"))[1];
+                    timestamp = (thisStudentGrades[i].split(":"))[2];
+                    String [] elements = timestamp.split(" ");
+                    timestamp = String.format("%s-%s-%s %s:%s", elements[0], elements[1], elements[2],
+                            elements[3], elements[4]);
+                    gradeAndTime = new String[2];
+                    gradeAndTime[0] = grade;
+                    gradeAndTime[1] = timestamp;
+                    quizTaken = true;
+                }
             }
+        } else {
+            System.out.println("The student username doesn't exist!");
         }
-        if ( quizTaken ) {
-            grade = (thisStudentGrades[quizIndex].split(":"))[1];
+        if (!quizTaken) {
+            System.out.println("This student hasn't taken this quiz yet or the quiz doesn't exist!");
         }
 
-        return grade;
+
+        return gradeAndTime;
+    }
+
+    public Quiz findQuiz(int wantedID) {
+        Quiz[] quizzes = retrieveQuizzes();
+        Quiz returnQuiz = null;
+        boolean exists = false;
+        if (quizzes.length == 0) {
+            System.out.println("There aren't any quizzes created. Please check the quiz file!");
+        } else {
+            for (int i = 0 ; i < quizzes.length ; i++) {
+                if (wantedID == quizzes[i].getQuizID()) {
+                    returnQuiz = quizzes[i];
+                    exists = true;
+                }
+            }
+        }
+        if (exists) {
+            return returnQuiz;
+        } else {
+            System.out.println("The quiz doesn't exist");
+            return returnQuiz;
+        }
     }
 }
