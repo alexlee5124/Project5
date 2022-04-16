@@ -17,7 +17,7 @@ public class Quiz {
     private int[] questionPoints;   // a record of what each question is worth
     private int[] questionsIndex;  // An array for question pool
 
-
+    Tools tools = new Tools();
     /** Quiz constructors
      * CS1800 Spring 2022, Project 4
      * @author Taylor Graham, Alex lee
@@ -36,7 +36,7 @@ public class Quiz {
 
     public Quiz( int quizID, int numberQuestions, LocalDateTime deadline, int duration, int totalPoints,
                  int[] questionsIndex, int[] questionPoints) {
-        this.quizID = quizID;   // The new quiz ID will be one greater than the last one
+        this.quizID = quizID;
         this.numberQuestions = numberQuestions;
         this.deadline = deadline;
         this.duration = duration;
@@ -61,22 +61,45 @@ public class Quiz {
         return this.numberQuestions;
     }
 
+    public int getDuration() {
+        return this.duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public void setQuestionPoints(int[] questionPoints) {
+        this.questionPoints = questionPoints;
+    }
+
+    public void setQuestionsIndex(int[] questionsIndex) {
+        this.questionsIndex = questionsIndex;
+    }
+
+    public String getDeadline() {
+        return this.deadline.toString();
+    }
+
+    public void setDeadline(LocalDateTime deadline) {
+        this.deadline = deadline;
+    }
+
     /** Retrieve the largest quiz ID value
      * CS1800 Spring 2022, Project 4
      * @author Alex Lee
      * @version 4/11/2022
      */
     public int retrieveLargestID() {
-        ArrayList<String> quizList = new ArrayList<String>();
-        try (BufferedReader bfr = new BufferedReader(new FileReader("Quiz.txt"))) {
-            String line;
-            while ((line = bfr.readLine()) != null) {
-                quizList.add(line);
-            }
-        } catch (IOException ie) {
-            System.out.println("Either the file doesn't exist or the file is in the wrong format!");
+        String quizFile = tools.loadTextFile("Quiz.txt");
+        String[] lines = new String[0];
+        if (!quizFile.equals("")) {
+            lines = quizFile.split("/");
         }
-        int largest = Integer.parseInt((quizList.get(quizList.size() - 1)).split(":")[0]);
+        int largest = 0;
+        if (lines.length > 0) {
+            largest = Integer.parseInt(lines[lines.length - 1].split(":")[0]);
+        }
         return largest;
     }
 
@@ -86,21 +109,16 @@ public class Quiz {
      * @version 4/9/2022
      */
     public Question[] retrieveQuestions() {
-        ArrayList<String> questionsList = new ArrayList<String>();
-        try (BufferedReader bfr = new BufferedReader(new FileReader("Questions.txt"))) {
-            String line;
-            while ((line = bfr.readLine()) != null) {
-                questionsList.add(line);
-            }
-        } catch (IOException ie) {
-            System.out.println("Either the file doesn't exist or the file is in the wrong format!");
-        }
+        String questionFile = tools.loadTextFile("Questions.txt");
+        String[] lines = questionFile.split("/");
 
-        Question[] questions = new Question[questionsList.size()];
-        for (int i = 0; i < questionsList.size(); i++) {
-            String prompt = (questionsList.get(i).split(","))[0];
-            String answer = (questionsList.get(i).split(","))[1];
-            Question question = new Question(0, prompt, answer);
+        Question[] questions = new Question[lines.length];
+        for (int i = 0; i < lines.length; i++) {
+            String[] elements = lines[i].split(",");
+            String prompt = elements[0];
+            String answer = elements[1];
+            String questionType = elements[2];
+            Question question = new Question(prompt, answer, questionType);
             questions[i] = question;
         }
         return questions;
@@ -125,33 +143,15 @@ public class Quiz {
         return quizQuestions;
     }
 
-    /** Retrieve number of questions existing in the quiz file
-     * CS1800 Spring 2022, Project 4
-     * @author Alex Lee
-     * @version 4/9/2022
-     */
-    public int getNumberQuizzes() {
-        ArrayList<String> quizList = new ArrayList<String>();
-        try (BufferedReader bfr = new BufferedReader(new FileReader("Quiz.txt"))) {
-            String line;
-            while ((line = bfr.readLine()) != null) {
-                quizList.add(line);
-            }
-        } catch (IOException ie) {
-            System.out.println("Either the file doesn't exist or the file is in the wrong format!");
-        }
-        return quizList.size();
-    }
-
     /** append this quiz to quiz text file
      * CS1800 Spring 2022, Project 4
      * @author Alex Lee
      * @version 4/9/2022
      */
-    public void writeQuiz() {
+    public void writeNewQuiz() {
         try {
             PrintWriter out = new PrintWriter(new FileOutputStream("Quiz.txt", true));
-            out.println(this.toString());
+            out.println(this);
             out.close();
             System.out.println("Quiz recorded!");
         } catch (Exception e) {
@@ -172,7 +172,7 @@ public class Quiz {
             int questionGrade = questions[i].gradeQuestion(responses[i]);
             totalPointsEarned = totalPointsEarned + questionGrade;
         }
-        float grade = (float) ( (float) totalPointsEarned / this.totalPoints) * 100;
+        float grade = ((float) totalPointsEarned / this.totalPoints) * 100;
         System.out.printf("GRADE : %d/%d = %.2f\n", totalPointsEarned, this.totalPoints, grade);
 
         return grade;
@@ -209,7 +209,7 @@ public class Quiz {
         }
         questionPointsString = questionPointsString +  this.questionPoints[this.numberQuestions - 1];
 
-        return String.format("%d:%d:%s:%s:%d:%d:%s", this.quizID, this.numberQuestions, questionPointsString,
+        return String.format("%d:%d:%s:%s:%d:%d:%s/", this.quizID, this.numberQuestions, questionPointsString,
                 deadlineString, this.duration,
                 this.totalPoints, questionsIndexString);
     }
