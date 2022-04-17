@@ -7,83 +7,105 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Server
-{
-    public static void main(String[] args)
-    {
-        ServerSocket serverSocket = null;
-        Scanner fromKeyboard = new Scanner(System.in);
-        System.out.println("Enter port number");
-        int portNumber = Integer.parseInt(fromKeyboard.nextLine());
+/**
+ * Server program responsible for receiving input from client and processing data
+ *
+ * CS1800 Spring 2022, Project 4
+ *
+ * @author Alex Lee, Quinn Bello
+ * @version 4/17/2022
+ */
 
+public class Server {
+    static Tools tools = new Tools();
+
+    public static void main(String[] args) throws IOException {
+        ServerSocket serverSocket = null;
+        Scanner scan = new Scanner(System.in);
         try
         {
-            serverSocket = new ServerSocket(portNumber);
+            serverSocket = new ServerSocket(4242);
             System.out.println("Server established");
         } catch (IOException e)
         {
             System.out.println("Error establishing server");
             e.printStackTrace();
         }
-
         System.out.println("Waiting for the client to connect...");
         Socket socket = null;
         BufferedReader reader = null;
         PrintWriter writer = null;
-
-        try
-        {
+        try {
+            assert serverSocket != null;
             socket = serverSocket.accept();
             System.out.println("Client connected!");
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             writer = new PrintWriter(socket.getOutputStream());
         } catch (IOException e)
         {
+            System.out.println("TEST POINT 1");
             e.printStackTrace();
         }
+        //////////////////////////////////////////////////////////////////
+        assert reader != null;
+        assert writer != null;
+        int initialResponse = Integer.parseInt(reader.readLine());
+        Account newAccount;
+        switch (initialResponse) {
+            case 1:
+                System.out.println("Creating account...");
+                boolean created = false;
+                do {
+                    String username = reader.readLine();
+                    newAccount = new Account(username, false);
 
-        String message = "";
-        ArrayList<String> messages = new ArrayList<>();
-
-        while (message.compareTo("exit") != 0)
-        {
-            try
-            {
-                // program waits here for client to send something
-                message = reader.readLine();
-            } catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-
-            if (message.compareTo("exit") == 0) // for case exit
-            {
-                // do nothing, loop ends next iteration
-            }
-            else if (message.compareTo("show history") == 0) // for show history
-            {
-                String history = "";
-                for (int i = 0; i < messages.size(); i++)
-                {
-                    // write all the stored messages to the writer
-                    history += messages.get(i) + "!@#";
-                }
-                writer.write(history);
-                writer.println();
+                    int accountType = Integer.parseInt(reader.readLine());
+                    if (accountType == 1) {
+                        newAccount = new Teacher(newAccount.getUsername(), false);
+                    } else if (accountType == 2) {
+                        newAccount = new Student(newAccount.getUsername(), false);
+                    }
+                    created = newAccount.createAccount();
+                    if (!created) {
+                        writer.println("F");
+                        writer.flush();
+                    }
+                } while (!created);
+                System.out.println("Account successfully created");
+                writer.println("T");
                 writer.flush();
-            }
-            else // all other cases:
-                messages.add(message);
+                break;
+            case 2:
+                System.out.println("Logging in...");
+                String accountType = "";
+                do {
+                    String username = reader.readLine();
+                    newAccount = new Account(username, false);
+                    accountType = newAccount.logIn();
+                    if (!newAccount.isLogged()) {
+                        writer.println("F");
+                        writer.flush();
+                    }
+                } while (!newAccount.isLogged());
+                writer.println("T");
+                writer.flush();
+                if (accountType.equals("student")) {
+                    writer.println("student");
+                    writer.flush();
+                } else if (accountType.equals("teacher")) {
+                    writer.println("teacher");
+                    writer.flush();
+                }
+                break;
+            case 3:
+                System.out.println("Exiting...");
+                break;
+            default:
+                 break;
         }
 
-        writer.close();
 
-        try
-        {
-            reader.close();
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+
+
     }
 }
