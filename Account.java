@@ -109,7 +109,6 @@ public class Account {
         if ( this.isLogged() ) {
             System.out.println("Logged in!");
         } else {
-            System.out.println("The username doesn't exist!");
         }
         return accountType;
     }
@@ -137,13 +136,11 @@ public class Account {
 
         // Add new account if the username doesn't already exist
         if (alreadyExists) {
-            System.out.println("This account already exists!");
         } else {
             try {
                 out = new PrintWriter(new FileOutputStream("AccountInformation.txt", true));
                 out.println( this.toString() );
                 out.close();
-                System.out.println("Account created!");
                 created = true;
             } catch ( Exception e ) {
                 System.out.println("ERROR CREATING NEW ACCOUNT");
