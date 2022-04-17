@@ -6,19 +6,16 @@ import java.net.Socket;
 import java.sql.SQLOutput;
 import java.util.Scanner;
 
-public class Client
-{
-    public static void main(String[] args)
-    {
+public class Client {
+    public static void main(String[] args) throws IOException {
         Scanner scan = new Scanner(System.in);
         Socket socket = null;
         BufferedReader reader = null;
         PrintWriter writer = null;
+        Tools tools = new Tools();
 
-        System.out.println("Enter the host name");
-        String hostname = scan.nextLine();
-        System.out.println("Enter the port number");
-        int port = Integer.parseInt(scan.nextLine());
+        String hostname = "localhost";
+        int port = 4242;
 
         try
         {
@@ -27,65 +24,83 @@ public class Client
             writer = new PrintWriter(socket.getOutputStream());
         } catch (IOException e)
         {
+            System.out.println("TEST POINT 2");
             e.printStackTrace();
         }
+        //////////////////////////////////////////////////////////////////
+        int initialResponse = 0;
+        Account newAccount = new Account();
+        System.out.println("What would you like to do?\n1. Create account\n2. Log in\n3. Exit");
+        initialResponse = tools.receiveValidInt(1, 3, scan);
 
-        System.out.println("Enter your username");
-        String username = scan.nextLine();
-        String message = "";
-
-        while (message.compareTo("exit") != 0)
-        {
-            System.out.println("\nEnter your message\n\n  Other Options:\n   - show history\n   - exit\n");
-            message = scan.nextLine(); // get input
-
-            if (message.compareTo("show history") == 0)
-            {
-                writer.write("show history");
-                writer.println();
+        assert writer != null;
+        switch (initialResponse) {
+            case 1:
+                writer.println("1");
                 writer.flush();
-                String history = "";
+                String created = "";
+                do {
+                    System.out.println("What do you want your username to be?");
+                    String username = scan.nextLine();
+                    writer.println(username);
+                    writer.flush();
 
-                try
-                {
-                    System.out.println("\nMessage history to date:\n");
+                    System.out.println("Are you a teacher or a student?\n1. Teacher\n2. Student");
+                    int accountType = tools.receiveValidInt(1, 2, scan);
+                    writer.println(accountType);
+                    writer.flush();
 
-                    history = reader.readLine();
-                    String[] messages = history.split("!@#");
+                    created = reader.readLine();
+                    if (created.equals("F")) {
+                        System.out.println("This account already exists!");
+                    }
+                } while (created.equals("F"));
+                System.out.println("Account created!");
+                System.out.println("Have a nice day!");
+                break;
+            case 2:
+                writer.println("2");
+                writer.flush();
+                String accountType;
+                String loggedIn;
+                do {
+                    System.out.println("What is your username?");
+                    String username = scan.nextLine();
+                    writer.println(username);
+                    writer.flush();
 
-                    for (int i = 0; i < messages.length; i++)
-                        System.out.println(messages[i]);
+                    loggedIn = reader.readLine();
+                    if (loggedIn.equals("F")) {
+                        System.out.println("This username doesn't exist!");
+                    }
+                } while (loggedIn.equals("F"));
 
-                    System.out.println("\nEnd of message history");
-
-                } catch (IOException e)
-                {
-                    e.printStackTrace();
+                accountType = reader.readLine();
+                if (accountType.equals("student")) {
+                    newAccount = new Student(newAccount.getUsername(), true);
+                } else if (accountType.equals("teacher")) {
+                    newAccount = new Teacher(newAccount.getUsername(), true);
                 }
-
-            } else if (message.compareTo("exit") == 0)
-            {
-                writer.write(message);
-                writer.println();
-                writer.flush();
-                System.out.println("Exiting...");
-            } else
-            {
-                writer.write(username + ": " + message);
-                writer.println();
-                writer.flush();
+                break;
+            case 3:
+                writer.println("3");
+                System.out.println("Have a nice day!");
+                break;
+            default:
+                break;
+        }
+        if (newAccount.isLogged()) {
+            if (newAccount instanceof Teacher teacher) {
+                System.out.println("What would you like to do?\n" +
+                        "1. Create quiz\n2. Delete quiz\n3. Modify quiz\n4. View student submission\n" +
+                        "5. Edit question pool\n6. Modify account" +
+                        "\n7. Delete account\n8. Exit");
+            } else if (newAccount instanceof Student student) {
+                System.out.println("What would you like to do?\n" +
+                        "1. Take quiz\n2. View quiz submissions\n3. Modify account\n4. Delete account\n" +
+                        "5. Exit");
             }
         }
 
-        System.out.println("Program exited, goodbye");
-        writer.close();
-
-        try
-        {
-            reader.close();
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        }
     }
 }
