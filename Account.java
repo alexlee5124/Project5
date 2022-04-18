@@ -108,8 +108,8 @@ public class Account {
         }
         if ( this.isLogged() ) {
             System.out.println("Logged in!");
-        } else {
         }
+        System.out.printf("TEST POINT 4 %s\n", accountType);
         return accountType;
     }
 
