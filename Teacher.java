@@ -144,7 +144,8 @@ public class Teacher extends Account {
      * @author Alex Lee
      * @version 4/11/2022
      */
-    public void deleteQuiz( int wantedID ) {
+    public boolean deleteQuiz( int wantedID ) {
+        boolean deleted = false;
         String quizFile = tools.loadTextFile("Quiz.txt");
         String[] quizzes = quizFile.split("/");
         ArrayList<String> quizList = new ArrayList<>();
@@ -168,13 +169,12 @@ public class Teacher extends Account {
                     out.println(s);
                 }
                 out.close();
+                deleted = true;
             } catch (Exception e) {
                 System.out.println("ERROR DELETING QUIZ!");
             }
-            System.out.println("Quiz deleted!");
-        } else {
-            System.out.println("This quiz doesn't exist.");
         }
+        return deleted;
     }
 
     /** Receive the question index to be deleted and write over the question file with it deleted
