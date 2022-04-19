@@ -12,6 +12,11 @@ Taylor Graham:
 
 Implemented Classes:
 ----------------------
+
+**Client.java**
+
+**Server.java**
+
 **Account.java:**
 
 The Account class is the superclass for both the Teacher and Student classes. 
