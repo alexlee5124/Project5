@@ -48,62 +48,67 @@ public class Server {
         //////////////////////////////////////////////////////////////////
         assert reader != null;
         assert writer != null;
-        int initialResponse = Integer.parseInt(reader.readLine());
-        Account newAccount = null;
-        switch (initialResponse) {
-            case 1:
-                System.out.println("Creating account...");
-                boolean created = false;
-                do {
-                    String username = reader.readLine();
-                    newAccount = new Account(username, false);
+        int initialResponse = 0;
+        Account newAccount;
+        do {
+            newAccount = null;
+            initialResponse = Integer.parseInt(reader.readLine());
+            switch (initialResponse) {
+                case 1:
+                    System.out.println("Creating account...");
+                    boolean created = false;
+                    do {
+                        String username = reader.readLine();
+                        newAccount = new Account(username, false);
 
-                    int accountType = Integer.parseInt(reader.readLine());
-                    if (accountType == 1) {
-                        newAccount = new Teacher(newAccount.getUsername(), false);
-                    } else if (accountType == 2) {
-                        newAccount = new Student(newAccount.getUsername(), false);
-                    }
-                    created = newAccount.createAccount();
-                    if (!created) {
-                        writer.println("F");
+                        int accountType = Integer.parseInt(reader.readLine());
+                        if (accountType == 1) {
+                            newAccount = new Teacher(newAccount.getUsername(), false);
+                        } else if (accountType == 2) {
+                            newAccount = new Student(newAccount.getUsername(), false);
+                        }
+                        created = newAccount.createAccount();
+                        if (!created) {
+                            writer.println("F");
+                            writer.flush();
+                        }
+                    } while (!created);
+                    System.out.println("Account successfully created");
+                    writer.println("T");
+                    writer.flush();
+                    break;
+                case 2:
+                    System.out.println("Logging in...");
+                    String accountType = "";
+                    do {
+                        String username = reader.readLine();
+                        newAccount = new Account(username, false);
+                        accountType = newAccount.logIn();
+                        if (!newAccount.isLogged()) {
+                            writer.println("F");
+                            writer.flush();
+                        }
+                    } while (!newAccount.isLogged());
+                    writer.println("T");
+                    writer.flush();
+                    if (accountType.equals("student")) {
+                        newAccount = new Student(newAccount.getUsername(), true);
+                        writer.println("student");
+                        writer.flush();
+                    } else if (accountType.equals("teacher")) {
+                        newAccount = new Teacher(newAccount.getUsername(), true);
+                        writer.println("teacher");
                         writer.flush();
                     }
-                } while (!created);
-                System.out.println("Account successfully created");
-                writer.println("T");
-                writer.flush();
-                break;
-            case 2:
-                System.out.println("Logging in...");
-                String accountType = "";
-                do {
-                    String username = reader.readLine();
-                    newAccount = new Account(username, false);
-                    accountType = newAccount.logIn();
-                    if (!newAccount.isLogged()) {
-                        writer.println("F");
-                        writer.flush();
-                    }
-                } while (!newAccount.isLogged());
-                writer.println("T");
-                writer.flush();
-                if (accountType.equals("student")) {
-                    newAccount = new Student(newAccount.getUsername(), true);
-                    writer.println("student");
-                    writer.flush();
-                } else if (accountType.equals("teacher")) {
-                    newAccount = new Teacher(newAccount.getUsername(), true);
-                    writer.println("teacher");
-                    writer.flush();
-                }
-                break;
-            case 3:
-                System.out.println("Exiting...");
-                break;
-            default:
-                break;
-        }
+                    initialResponse = 3;
+                    break;
+                case 3:
+                    System.out.println("Exiting...");
+                    break;
+                default:
+                    break;
+            }
+        } while (initialResponse != 3);
 
         assert newAccount != null;
         if (newAccount.isLogged()) {
@@ -117,12 +122,14 @@ public class Server {
                         case 1:
                             int randomQuiz = Integer.parseInt(reader.readLine());
                             boolean flagError = false;
-                            int numberQuestions = Integer.parseInt(reader.readLine());
+                            int numberQuestions;
                             LocalDateTime deadline = null;
                             int duration = 0;
                             switch (randomQuiz) {
                                 case 1:
+                                    numberQuestions = Integer.parseInt(reader.readLine());
                                     do {
+                                        flagError = false;
                                         String deadlineString = reader.readLine();
                                         try {
                                             DateTimeFormatter deadlineFormat =
@@ -141,18 +148,19 @@ public class Server {
 
                                     duration = Integer.parseInt(reader.readLine());
                                     teacher.createRandom(numberQuestions, deadline, duration);
-                                    writer.println("F");
+                                    writer.println("Success");
                                     writer.flush();
                                     break;
                                 case 2:
                                     numberQuestions = Integer.parseInt(reader.readLine());
                                     int[] questionIndex = new int[numberQuestions];
                                     for (int i = 0; i < numberQuestions; i++) {
-
                                         int index = Integer.parseInt(reader.readLine());
                                         questionIndex[i] = index;
                                     }
+
                                     do {
+                                        flagError = false;
                                         String deadlineString = reader.readLine();
                                         try {
                                             DateTimeFormatter deadlineFormat =
@@ -171,7 +179,7 @@ public class Server {
 
                                     duration = Integer.parseInt(reader.readLine());
                                     teacher.createCustom(numberQuestions, deadline, duration, questionIndex);
-                                    writer.println("F");
+                                    writer.println("Success");
                                     writer.flush();
                                     break;
                                 default:
@@ -194,8 +202,96 @@ public class Server {
                             }
                             break;
                         case 3:
+                            Quiz quiz;
+                            do {
+                                flagError = false;
+                                quizID = Integer.parseInt(reader.readLine());
+                                quiz = teacher.findQuiz(quizID);
+                                if (quiz == null) {
+                                    writer.println("Failure");
+                                    writer.flush();
+                                } else {
+                                    writer.println("Success");
+                                    writer.flush();
+
+                                    int modifyQuizOption = Integer.parseInt(reader.readLine());
+                                    switch (modifyQuizOption) {
+                                        case 1:
+                                            System.out.println("Modifying question indexes...");
+                                            int[] newQuestionIndexes = new int[quiz.getNumberQuestions()];
+                                            for (int i = 0 ; i < quiz.getNumberQuestions() ; i++) {
+                                                int newIndex = Integer.parseInt(reader.readLine());
+                                                newQuestionIndexes[i] = newIndex;
+                                            }
+                                            quiz.setQuestionsIndex(newQuestionIndexes);
+                                            teacher.overwriteQuiz(quiz.getQuizID(), quiz);
+                                            writer.println("Success");
+                                            writer.flush();
+                                            break;
+                                        case 2:
+                                            System.out.println("Modifying question point values...");
+                                            int[] questionPoints = quiz.getQuestionPoints();
+                                            for (int i = 0 ; i < questionPoints.length ; i++) {
+                                                int newPoint = Integer.parseInt(reader.readLine());
+                                                questionPoints[i] = newPoint;
+                                            }
+                                            quiz.setQuestionPoints(questionPoints);
+                                            teacher.overwriteQuiz(quiz.getQuizID(), quiz);
+                                            writer.println("Success");
+                                            writer.flush();
+                                            break;
+                                        case 3:
+                                            do {
+                                                flagError = false;
+                                                String newDeadline = reader.readLine();
+                                                try {
+                                                    DateTimeFormatter deadlineFormat =
+                                                            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+                                                    deadline = LocalDateTime.parse(newDeadline, deadlineFormat);
+                                                    quiz.setDeadline(deadline);
+                                                    teacher.overwriteQuiz(quiz.getQuizID(), quiz);
+                                                    writer.println("Success");
+                                                    writer.flush();
+                                                } catch (Exception e) {
+                                                    System.out.println("Invalid deadline response!");
+                                                    System.out.println("Prompting user again.");
+                                                    writer.println("Failure");
+                                                    writer.flush();
+                                                    flagError = true;
+                                                }
+                                            } while (flagError);
+                                            break;
+                                        case 4:
+                                            duration = Integer.parseInt(reader.readLine());
+                                            quiz.setDuration(duration);
+                                            teacher.overwriteQuiz(quiz.getQuizID(), quiz);
+                                            writer.println("Success");
+                                            writer.flush();
+                                            break;
+                                        case 5:
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                            } while (flagError);
+
                             break;
                         case 4:
+                            String studentUsername = reader.readLine();
+                            int wantedID = Integer.parseInt(reader.readLine());
+                            String[] studentGradeAndTime = teacher.loadGrade(studentUsername, wantedID);
+                            if (studentGradeAndTime == null) {
+                                writer.println("Failure");
+                                writer.flush();
+                                writer.println("Failure");
+                                writer.flush();
+                            } else {
+                                writer.println(studentGradeAndTime[0]);
+                                writer.flush();
+                                writer.println(studentGradeAndTime[1]);
+                                writer.flush();
+                            }
                             break;
                         case 5:
                             System.out.println("Modifying question pool...");
@@ -240,6 +336,10 @@ public class Server {
                                     }
                                     break;
                                 case 2:
+                                    int questionNumber = Integer.parseInt(reader.readLine());
+                                    teacher.deleteQuestion(questionNumber);
+                                    writer.println("Success");
+                                    writer.flush();
                                     break;
                                 case 3:
                                     break;
@@ -248,16 +348,73 @@ public class Server {
                             }
                             break;
                         case 6:
+                            boolean modified;
+                            do {
+                                String newUsername = reader.readLine();
+                                modified = teacher.modifyAccount(newUsername);
+                                if (!modified) {
+                                    writer.println("Failure");
+                                    writer.flush();
+                                }
+                            } while (!modified);
+                            writer.println("Success");
+                            writer.flush();
                             break;
                         case 7:
+                            teacher.deleteAccount();
+                            writer.println("Success");
+                            writer.flush();
+                            option = 8;
                             break;
                         case 8:
+                            System.out.println("Exiting...");
                             break;
                         default:
                             break;
                     }
                 } while (option != 8);
 
+            } else if (newAccount instanceof Student student) {
+                boolean flagError = false;
+
+                int option;
+                do {
+                    option = Integer.parseInt(reader.readLine());
+                    switch (option) {
+                        case 1:
+                            break;
+                        case 2:
+                            int quizID = Integer.parseInt(reader.readLine());
+                            String quizGrade = student.loadGrade(quizID);
+                            writer.println(quizGrade);
+                            writer.flush();
+                            break;
+                        case 3:
+                            boolean modified;
+                            do {
+                                String newUsername = reader.readLine();
+                                modified = student.modifyAccount(newUsername);
+                                if (!modified) {
+                                    writer.println("Failure");
+                                    writer.flush();
+                                }
+                            } while (!modified);
+                            writer.println("Success");
+                            writer.flush();
+                            break;
+                        case 4:
+                            student.deleteAccount();
+                            writer.println("Success");
+                            writer.flush();
+                            option = 5;
+                            break;
+                        case 5:
+                            System.out.println("Exiting...");
+                            break;
+                        default:
+                            break;
+                    }
+                } while (option != 5);
             }
         }
     }
