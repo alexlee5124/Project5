@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Scanner;
 
 /**
@@ -42,65 +43,68 @@ public class Server {
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             writer = new PrintWriter(socket.getOutputStream());
         } catch (IOException e) {
-            System.out.println("TEST POINT 1");
             e.printStackTrace();
         }
         //////////////////////////////////////////////////////////////////
         assert reader != null;
         assert writer != null;
         int initialResponse = 0;
-        Account newAccount;
+        Account newAccount = new Account();
+        boolean created = false;
         do {
-            newAccount = null;
             initialResponse = Integer.parseInt(reader.readLine());
             switch (initialResponse) {
                 case 1:
                     System.out.println("Creating account...");
-                    boolean created = false;
-                    do {
-                        String username = reader.readLine();
-                        newAccount = new Account(username, false);
+                    created = false;
+                    String username = reader.readLine();
+                    System.out.printf("TEST USERNAME : %s", username);
+                    newAccount = new Account(username, false);
 
-                        int accountType = Integer.parseInt(reader.readLine());
-                        if (accountType == 1) {
-                            newAccount = new Teacher(newAccount.getUsername(), false);
-                        } else if (accountType == 2) {
-                            newAccount = new Student(newAccount.getUsername(), false);
-                        }
-                        created = newAccount.createAccount();
-                        if (!created) {
-                            writer.println("F");
-                            writer.flush();
-                        }
-                    } while (!created);
-                    System.out.println("Account successfully created");
-                    writer.println("T");
-                    writer.flush();
+                    int accountType = Integer.parseInt(reader.readLine());
+                    System.out.printf("TEST ACCOUNT TYPE %d", accountType);
+                    if (accountType == 0) {
+                        newAccount = new Teacher(newAccount.getUsername(), false);
+                    } else if (accountType == 1) {
+                        newAccount = new Student(newAccount.getUsername(), false);
+                    }
+                    created = newAccount.createAccount();
+                    if (!created) {
+                        writer.println("F");
+                        writer.flush();
+                    } else {
+                        System.out.println("Account successfully created");
+                        writer.println("T");
+                        writer.flush();
+                    }
                     break;
                 case 2:
                     System.out.println("Logging in...");
-                    String accountType = "";
-                    do {
-                        String username = reader.readLine();
-                        newAccount = new Account(username, false);
-                        accountType = newAccount.logIn();
-                        if (!newAccount.isLogged()) {
-                            writer.println("F");
-                            writer.flush();
-                        }
-                    } while (!newAccount.isLogged());
-                    writer.println("T");
-                    writer.flush();
-                    if (accountType.equals("student")) {
+                    String accountTypeStr = "";
+                    username = reader.readLine();
+                    System.out.printf("TEST LOG IN USERNAME %s", username);
+                    newAccount = new Account(username, false);
+                    accountTypeStr = newAccount.logIn();
+                    if (!newAccount.isLogged()) {
+                        System.out.println("TEST POINT 7");
+                        writer.println("F");
+                        writer.flush();
+                    } else {
+                        writer.println("T");
+                        writer.flush();
+                    }
+                    if (accountTypeStr.equals("student")) {
                         newAccount = new Student(newAccount.getUsername(), true);
                         writer.println("student");
                         writer.flush();
-                    } else if (accountType.equals("teacher")) {
+                    } else if (accountTypeStr.equals("teacher")) {
                         newAccount = new Teacher(newAccount.getUsername(), true);
                         writer.println("teacher");
                         writer.flush();
+                    } else if (accountTypeStr.equals("false")) {
+                        writer.println("false");
+                        writer.flush();
                     }
-                    initialResponse = 3;
                     break;
                 case 3:
                     System.out.println("Exiting...");
@@ -108,9 +112,9 @@ public class Server {
                 default:
                     break;
             }
-        } while (initialResponse != 3);
+        } while (initialResponse != 3 && !created && !Objects.requireNonNull(newAccount).isLogged());
 
-        assert newAccount != null;
+        System.out.println("TEST POINT 6");
         if (newAccount.isLogged()) {
             System.out.println("TEST POINT 2");
             if (newAccount instanceof Teacher teacher) {
@@ -219,7 +223,7 @@ public class Server {
                                         case 1:
                                             System.out.println("Modifying question indexes...");
                                             int[] newQuestionIndexes = new int[quiz.getNumberQuestions()];
-                                            for (int i = 0 ; i < quiz.getNumberQuestions() ; i++) {
+                                            for (int i = 0; i < quiz.getNumberQuestions(); i++) {
                                                 int newIndex = Integer.parseInt(reader.readLine());
                                                 newQuestionIndexes[i] = newIndex;
                                             }
@@ -231,7 +235,7 @@ public class Server {
                                         case 2:
                                             System.out.println("Modifying question point values...");
                                             int[] questionPoints = quiz.getQuestionPoints();
-                                            for (int i = 0 ; i < questionPoints.length ; i++) {
+                                            for (int i = 0; i < questionPoints.length; i++) {
                                                 int newPoint = Integer.parseInt(reader.readLine());
                                                 questionPoints[i] = newPoint;
                                             }
