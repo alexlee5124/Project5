@@ -10,15 +10,12 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class ClientGUI extends JComponent implements Runnable {
-
-    Account newAccount;
     Socket socket = null;
     BufferedReader reader = null;
     PrintWriter writer = null;
     JFrame frame;
     Container content;
     JComboBox<String> teacherStudent;
-    Tools tools = new Tools();
 
 
     /** PANELS */
@@ -27,25 +24,44 @@ public class ClientGUI extends JComponent implements Runnable {
     JPanel logInPanel;
     JPanel studentPanel;
     JPanel teacherPanel;
+    JPanel modifyPanel;
     
     
-    /** Initial Buttons */
+    /** Initial Buttons and text fields */
     JButton createButton;
-    JButton createButton2;
     JButton logInButton;
-    JButton logInButton2;
     JButton exitButton;
-    
-    /** create account buttons and text fields */
+
+    /** Create account Buttons and text fields */
+    JButton createButton2;
     JTextField usernameText;
 
-    public static void main(String[] args) {
-        //////////////////////////////////////////////////////////////////
+    /** Log in Buttons*/
+    JButton logInButton2;
 
+    /** Teacher panel components */
+    JLabel teacherMenuPrompt = new JLabel("What would you like to do?");
+    JButton teacherMenuSelect;
+    JComboBox<String> teacherMenuOptions= new JComboBox();
+
+    /** Student panel components */
+    JLabel studentMenuPrompt = new JLabel("What would you like to do?");
+    JButton studentMenuSelect;
+    JComboBox<String> studentMenuOptions = new JComboBox();
+
+    /** Modify panel components*/
+    JButton modifyButtonT;
+    JButton modifyButtonS;
+    JLabel modifyPrompt = new JLabel("Enter a new username");
+
+
+
+
+    public static void main(String[] args) {
         SwingUtilities.invokeLater(new ClientGUI());
     }
 
-
+    /** ACTION LISTENERS */
     ActionListener initialListener = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == createButton) {
@@ -99,6 +115,7 @@ public class ClientGUI extends JComponent implements Runnable {
             }
         }
     };
+
     ActionListener logInListener = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == logInButton2) {
@@ -108,13 +125,11 @@ public class ClientGUI extends JComponent implements Runnable {
                 String logged = null;
                 String accountType = null;
                 try {
-                    System.out.println("TEST POINT 8");
                     logged = reader.readLine();
                     accountType = reader.readLine();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
-                System.out.println(logged);
                 logInPanel.setVisible(false);
                 if (logged.equals("F")) {
                     JOptionPane.showMessageDialog(null, "This account doesn't exist!",
@@ -123,20 +138,168 @@ public class ClientGUI extends JComponent implements Runnable {
                     initialPanel.setVisible(true);
                 } else if (logged.equals("T")) {
                     if (accountType.equals("student")) {
-                        JOptionPane.showMessageDialog(null, "Logged in!",
-                                "Logged in",
-                                JOptionPane.INFORMATION_MESSAGE);
+                        loadStudentPanel();
                         studentPanel.setVisible(true);
-                    } else if (accountType.equals("teacher")) {
-                        JOptionPane.showMessageDialog(null, "Logged in!",
+                        JOptionPane.showMessageDialog(null, "Student: logged in!",
                                 "Logged in",
                                 JOptionPane.INFORMATION_MESSAGE);
+                    } else if (accountType.equals("teacher")) {
+                        loadTeacherPanel();
                         teacherPanel.setVisible(true);
+                        JOptionPane.showMessageDialog(null, "Teacher: logged in!",
+                                "Logged in",
+                                JOptionPane.INFORMATION_MESSAGE);
                     }
                 }
             }
         }
     };
+
+    ActionListener teacherListener = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == teacherMenuSelect) {
+                int teacherSelectedOption = teacherMenuOptions.getSelectedIndex() + 1;
+                writer.println(teacherSelectedOption);
+                writer.flush();
+                teacherPanel.setVisible(false);
+                switch (teacherSelectedOption) {
+                    case 1:
+                        break;
+                    case 2:
+                         break;
+                    case 3:
+                        break;
+                    case 4:
+                        break;
+                    case 5:
+                        break;
+                    case 6:
+                        loadModifyPanel("T");
+                        modifyPanel.setVisible(true);
+                        break;
+                    case 7:
+                        try {
+                            String deleted = reader.readLine();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        JOptionPane.showMessageDialog(null, "Account deleted!\n" +
+                                        "Have a nice day!",
+                                "Account deleted",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        frame.dispose();
+                        break;
+                    default:
+                        break;
+                }
+                } else if (e.getSource() == exitButton) {
+                writer.println(8);
+                writer.flush();
+                JOptionPane.showMessageDialog(null, "Have a nice day!",
+                        "Exiting",
+                        JOptionPane.INFORMATION_MESSAGE);
+                frame.dispose();
+            }
+            }
+        };
+
+    ActionListener studentListener = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == studentMenuSelect) {
+                int studentSelectedOption = studentMenuOptions.getSelectedIndex() + 1;
+                writer.println(studentSelectedOption);
+                writer.flush();
+                studentPanel.setVisible(false);
+                switch (studentSelectedOption) {
+                    case 1:
+                        break;
+                    case 2:
+                        break;
+                    case 3:
+                        loadModifyPanel("S");
+                        modifyPanel.setVisible(true);
+                        break;
+                    case 4:
+                        JOptionPane.showMessageDialog(null, "Account deleted!\n" +
+                                        "Have a nice day!",
+                                "Account deleted",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        frame.dispose();
+                        break;
+                    default:
+                        break;
+
+                }
+            } else if (e.getSource() == exitButton) {
+                writer.println(5);
+                writer.flush();
+                JOptionPane.showMessageDialog(null, "Have a nice day!",
+                        "Exiting",
+                        JOptionPane.INFORMATION_MESSAGE);
+                frame.dispose();
+            }
+        }
+    };
+
+    ActionListener modifyListener = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == modifyButtonT) {
+                modifyPanel.setVisible(false);
+                String newUsername = usernameText.getText();
+                writer.println(newUsername);
+                writer.flush();
+
+                String modified = "";
+                try {
+                    modified = reader.readLine();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                teacherPanel.setVisible(true);
+                if (modified.equals("Failure")) {
+                    JOptionPane.showMessageDialog(null, "This username already exits!",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Username modified!",
+                            "Modified",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+            } else if (e.getSource() == modifyButtonS) {
+                modifyPanel.setVisible(false);
+                String newUsername = usernameText.getText();
+                writer.println(newUsername);
+                writer.flush();
+
+                String modified = "";
+                try {
+                    modified = reader.readLine();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                studentPanel.setVisible(true);
+                if (modified.equals("Failure")) {
+                    JOptionPane.showMessageDialog(null, "This username already exits!",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Username modified!",
+                            "Modified",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+        }
+    };
+
+
+    /** ACTION LISTENERS */
+
+    /** LOAD PANELS */
+
+    public void loadInitialPanel() {
+        initialPanel.add(exitButton);
+
+    }
 
     public void createAccount() {
         createPanel = new JPanel();
@@ -165,10 +328,74 @@ public class ClientGUI extends JComponent implements Runnable {
         logInPanel.add(usernameText);
         logInPanel.add(logInButton2);
         logInButton2.addActionListener(logInListener);
+
         content.add(logInPanel, BorderLayout.CENTER);
         logInPanel.setVisible(true);
+    }
+
+    public void loadTeacherPanel() {
+        teacherPanel = new JPanel();
+        teacherMenuSelect = new JButton("Select");
+        teacherMenuOptions.addItem("Create quiz");
+        teacherMenuOptions.addItem("Delete quiz");
+        teacherMenuOptions.addItem("Modify quiz");
+        teacherMenuOptions.addItem("View student submissions");
+        teacherMenuOptions.addItem("Edit question pool");
+        teacherMenuOptions.addItem("Modify account");
+        teacherMenuOptions.addItem("Delete account");
+
+        teacherPanel.add(teacherMenuPrompt);
+        teacherPanel.add(teacherMenuOptions);
+        teacherPanel.add(teacherMenuSelect);
+        teacherPanel.add(exitButton);
+        exitButton.addActionListener(teacherListener);
+        teacherMenuSelect.addActionListener(teacherListener);
+
+        content.add(teacherPanel, BorderLayout.CENTER);
+        teacherPanel.setVisible(true);
+    }
+
+    public void loadModifyPanel(String type) {
+        modifyPanel = new JPanel();
+        usernameText = new JTextField(20);
+
+        modifyPanel.add(modifyPrompt);
+        modifyPanel.add(usernameText);
+        if (type.equals("T")) {
+            modifyButtonT = new JButton("Modify");
+            modifyButtonT.addActionListener(modifyListener);
+            modifyPanel.add(modifyButtonT);
+        } else {
+            modifyButtonS = new JButton("Modify");
+            modifyButtonS.addActionListener(modifyListener);
+            modifyPanel.add(modifyButtonS);
+        }
+
+        content.add(modifyPanel, BorderLayout.CENTER);
+        modifyPanel.setVisible(true);
+    }
+
+    public void loadStudentPanel() {
+        studentPanel = new JPanel();
+        studentMenuOptions.addItem("Take quiz");
+        studentMenuOptions.addItem("View submissions");
+        studentMenuOptions.addItem("Modify account");
+        studentMenuOptions.addItem("Delete account");
+        studentMenuSelect = new JButton("Select");
+
+        studentPanel.add(studentMenuPrompt);
+        studentPanel.add(studentMenuOptions);
+        studentPanel.add(studentMenuSelect);
+        studentPanel.add(exitButton);
+
+        studentMenuSelect.addActionListener(studentListener);
+
+        content.add(studentPanel, BorderLayout.CENTER);
+        studentPanel.setVisible(true);
 
     }
+
+    /** LOAD PANELS */
 
     public void run() {
 
