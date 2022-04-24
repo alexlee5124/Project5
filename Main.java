@@ -63,8 +63,7 @@ public class Main {
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////
         if ( newAccount.isLogged() ) {
-            if (newAccount instanceof Teacher) {
-                Teacher teacher = new Teacher(newAccount.getUsername(), true);
+            if (newAccount instanceof Teacher teacher) {
                 int option;
 
                 do {
@@ -249,7 +248,6 @@ public class Main {
                             int questionPoolMod = tools.receiveValidInt(1, 3, scan);
                             switch (questionPoolMod) {
                                 case 1:
-                                    String questionType = "";
                                     int questionTypeOption = 0;
                                     System.out.println("What is the question type?\n1. Multiple choice\n" +
                                             "2. Response\n3. True/False");
@@ -342,8 +340,7 @@ public class Main {
                     }
                 } while(option != 8);
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
-            } else if ( newAccount instanceof Student ) {
-                Student student = (Student) newAccount;
+            } else if (newAccount instanceof Student student) {
                 int option = 0;
                 boolean flagError = false;
                 do {
