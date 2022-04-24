@@ -109,7 +109,6 @@ public class Account {
         if ( this.isLogged() ) {
             System.out.println("Logged in!");
         }
-        System.out.printf("TEST POINT 4 %s\n", accountType);
         return accountType;
     }
 
@@ -246,7 +245,6 @@ public class Account {
             } catch ( IOException ie ) {
                 System.out.println("ERROR FILE NOT FOUND");
             }
-            System.out.println("Account modified!");
             result = true;
         }
         return result;
