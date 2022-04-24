@@ -257,7 +257,6 @@ public class Teacher extends Account {
         } catch (Exception e) {
             System.out.println("ERROR RECORDING NEW QUESTION");
         }
-
     }
 
 
@@ -319,6 +318,11 @@ public class Teacher extends Account {
         }
     }
 
+    /** Load the grade and timestamp of desired student & quiz
+     * CS1800 Spring 2022, Project 4
+     * @author Alex Lee
+     * @version 4/19/2022
+     */
     public String[] loadGrade( String studentUsername, int wantedID ) {
         String grade = null;
         String timestamp = null;
@@ -370,6 +374,11 @@ public class Teacher extends Account {
         return gradeAndTime;
     }
 
+    /** Read the quiz text file and return an array of quizzes
+     * CS1800 Spring 2022, Project 4
+     * @author Alex Lee
+     * @version 4/19/2022
+     */
     public Quiz findQuiz(int wantedID) {
         Quiz[] quizzes = retrieveQuizzes();
         Quiz returnQuiz = null;
@@ -384,11 +393,33 @@ public class Teacher extends Account {
                 }
             }
         }
-        if (exists) {
-            return returnQuiz;
-        } else {
+        if (!exists) {
             System.out.println("The quiz doesn't exist");
-            return returnQuiz;
+        }
+        return returnQuiz;
+    }
+
+    /** Overwrite current quiz text file with current settings
+     * CS1800 Spring 2022, Project 4
+     * @author Alex Lee
+     * @version 4/19/2022
+     */
+    public void overwriteQuiz(int wantedID, Quiz updatedQuiz) {
+        Quiz[] quizzes = retrieveQuizzes();
+        for (int i = 0 ; i < quizzes.length ; i++) {
+            if (quizzes[i].getQuizID() == wantedID) {
+                quizzes[i] = updatedQuiz;
+            }
+        }
+        try {
+            PrintWriter out = new PrintWriter(new FileOutputStream("Quiz.txt", false));
+            for (Quiz q : quizzes) {
+                out.println(q);
+            }
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("ERROR RECORDING QUIZ");
         }
     }
 }
