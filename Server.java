@@ -86,7 +86,6 @@ public class Server {
                     newAccount = new Account(username, false);
                     accountTypeStr = newAccount.logIn();
                     if (!newAccount.isLogged()) {
-                        System.out.println("TEST POINT 7");
                         writer.println("F");
                         writer.flush();
                     } else {
@@ -112,13 +111,10 @@ public class Server {
                 default:
                     break;
             }
-        } while (initialResponse != 3 && !created && !Objects.requireNonNull(newAccount).isLogged());
+        } while (initialResponse != 3 && !Objects.requireNonNull(newAccount).isLogged());
 
-        System.out.println("TEST POINT 6");
         if (newAccount.isLogged()) {
-            System.out.println("TEST POINT 2");
             if (newAccount instanceof Teacher teacher) {
-                System.out.println("TEST POINT 3");
                 int option;
                 do {
                     option = Integer.parseInt(reader.readLine());
@@ -193,7 +189,6 @@ public class Server {
                         case 2:
                             System.out.println("Deleting quiz...");
                             int quizID = Integer.parseInt(reader.readLine());
-                            System.out.printf("TEST POINT 5 QUIZ ID %d\n", quizID);
                             boolean deleted = teacher.deleteQuiz(quizID);
                             if (deleted) {
                                 System.out.println("Quiz deleted.");
@@ -353,21 +348,21 @@ public class Server {
                             break;
                         case 6:
                             boolean modified;
-                            do {
-                                String newUsername = reader.readLine();
-                                modified = teacher.modifyAccount(newUsername);
-                                if (!modified) {
-                                    writer.println("Failure");
-                                    writer.flush();
-                                }
-                            } while (!modified);
-                            writer.println("Success");
-                            writer.flush();
+                            String newUsername = reader.readLine();
+                            modified = teacher.modifyAccount(newUsername);
+                            if (!modified) {
+                                writer.println("Failure");
+                                writer.flush();
+                            } else {
+                                writer.println("Success");
+                                writer.flush();
+                            }
                             break;
                         case 7:
                             teacher.deleteAccount();
                             writer.println("Success");
                             writer.flush();
+                            System.out.println("Exiting...");
                             option = 8;
                             break;
                         case 8:
@@ -383,7 +378,9 @@ public class Server {
 
                 int option;
                 do {
+                    System.out.println("TEST POINT 1");
                     option = Integer.parseInt(reader.readLine());
+                    System.out.printf("TEST OPTION : %d", option);
                     switch (option) {
                         case 1:
                             break;
@@ -394,22 +391,23 @@ public class Server {
                             writer.flush();
                             break;
                         case 3:
+                            System.out.println("Modifying account...");
                             boolean modified;
-                            do {
-                                String newUsername = reader.readLine();
-                                modified = student.modifyAccount(newUsername);
-                                if (!modified) {
-                                    writer.println("Failure");
-                                    writer.flush();
-                                }
-                            } while (!modified);
-                            writer.println("Success");
-                            writer.flush();
+                            String newUsername = reader.readLine();
+                            modified = student.modifyAccount(newUsername);
+                            if (!modified) {
+                                writer.println("Failure");
+                                writer.flush();
+                            } else {
+                                writer.println("Success");
+                                writer.flush();
+                            }
                             break;
                         case 4:
                             student.deleteAccount();
                             writer.println("Success");
                             writer.flush();
+                            System.out.println("Exiting...");
                             option = 5;
                             break;
                         case 5:
