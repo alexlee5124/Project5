@@ -3,10 +3,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.sql.SQLOutput;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 
 public class Client {
     public static void main(String[] args) throws IOException {
@@ -58,7 +59,6 @@ public class Client {
                         }
                     } while (created.equals("F"));
                     System.out.println("Account created!");
-                    System.out.println("Have a nice day!");
                     break;
                 case 2:
                     writer.println("2");
