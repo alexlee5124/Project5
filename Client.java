@@ -95,7 +95,8 @@ public class Client {
         } while (initialResponse != 3);
 
         if (newAccount.isLogged()) {
-            if (newAccount instanceof Teacher teacher) {
+            if (newAccount instanceof Teacher) {
+                Teacher teacher = new Teacher(newAccount.getUsername(), true);
                 int option;
                 do {
                     System.out.println("What would you like to do?\n" +
@@ -466,7 +467,8 @@ public class Client {
                 } while (option != 8);
 
 
-            } else if (newAccount instanceof Student student) {
+            } else if (newAccount instanceof Student) {
+                Student student = new Student(newAccount.getUsername(), true);
                 int option = 0;
                 String flag = "";
                 do {

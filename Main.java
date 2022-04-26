@@ -63,7 +63,8 @@ public class Main {
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////
         if ( newAccount.isLogged() ) {
-            if (newAccount instanceof Teacher teacher) {
+            if (newAccount instanceof Teacher) {
+                Teacher teacher = new Teacher(newAccount.getUsername(), true);
                 int option;
 
                 do {
@@ -340,7 +341,8 @@ public class Main {
                     }
                 } while(option != 8);
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
-            } else if (newAccount instanceof Student student) {
+            } else if (newAccount instanceof Student) {
+                Student student = new Student(newAccount.getUsername(), true);
                 int option = 0;
                 boolean flagError = false;
                 do {

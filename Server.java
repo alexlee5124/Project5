@@ -114,7 +114,8 @@ public class Server {
         } while (initialResponse != 3 && !Objects.requireNonNull(newAccount).isLogged());
 
         if (newAccount.isLogged()) {
-            if (newAccount instanceof Teacher teacher) {
+            if (newAccount instanceof Teacher) {
+                Teacher teacher = new Teacher(newAccount.getUsername(), true);
                 int option;
                 do {
                     option = Integer.parseInt(reader.readLine());
@@ -373,7 +374,8 @@ public class Server {
                     }
                 } while (option != 8);
 
-            } else if (newAccount instanceof Student student) {
+            } else if (newAccount instanceof Student) {
+                Student student = new Student(newAccount.getUsername(), true);
                 boolean flagError = false;
 
                 int option;
