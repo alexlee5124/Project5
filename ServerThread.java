@@ -1,14 +1,9 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Objects;
-import java.util.Scanner;
 
 /**
  * Server program responsible for receiving input from client and processing data
@@ -19,56 +14,63 @@ import java.util.Scanner;
  * @version 4/17/2022
  */
 
-public class Server {
-    static Tools tools = new Tools();
+public class ServerThread implements Runnable
+{
+    private Socket socket;
 
-    public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = null;
-        Scanner scan = new Scanner(System.in);
-        try {
-            serverSocket = new ServerSocket(4242);
-            System.out.println("Server established");
-        } catch (IOException e) {
-            System.out.println("Error establishing server");
-            e.printStackTrace();
-        }
-        System.out.println("Waiting for the client to connect...");
-        Socket socket = null;
+    public ServerThread(Socket socket)
+    {
+        this.socket = socket;
+    }
+
+    public void run()
+    {
         BufferedReader reader = null;
         PrintWriter writer = null;
+
         try {
-            assert serverSocket != null;
-            socket = serverSocket.accept();
             System.out.println("Client connected!");
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             writer = new PrintWriter(socket.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //////////////////////////////////////////////////////////////////
+
         assert reader != null;
         assert writer != null;
         int initialResponse = 0;
         Account newAccount = new Account();
         boolean created = false;
+
         do {
-            initialResponse = Integer.parseInt(reader.readLine());
+            try {
+                initialResponse = Integer.parseInt(reader.readLine());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             switch (initialResponse) {
                 case 1:
                     System.out.println("Creating account...");
                     created = false;
-                    String username = reader.readLine();
-                    System.out.printf("TEST USERNAME : %s", username);
-                    newAccount = new Account(username, false);
+                    String username = null;
+                    try {
+                        username = reader.readLine();
+                        System.out.printf("TEST USERNAME : %s", username);
+                        newAccount = new Account(username, false);
+                        int accountType = Integer.parseInt(reader.readLine());
+                        System.out.printf("TEST ACCOUNT TYPE %d", accountType);
 
-                    int accountType = Integer.parseInt(reader.readLine());
-                    System.out.printf("TEST ACCOUNT TYPE %d", accountType);
-                    if (accountType == 0) {
-                        newAccount = new Teacher(newAccount.getUsername(), false);
-                    } else if (accountType == 1) {
-                        newAccount = new Student(newAccount.getUsername(), false);
+                        if (accountType == 0) {
+                            newAccount = new Teacher(newAccount.getUsername(), false);
+                        } else if (accountType == 1) {
+                            newAccount = new Student(newAccount.getUsername(), false);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                     created = newAccount.createAccount();
+
                     if (!created) {
                         writer.println("F");
                         writer.flush();
@@ -81,9 +83,13 @@ public class Server {
                 case 2:
                     System.out.println("Logging in...");
                     String accountTypeStr = "";
-                    username = reader.readLine();
-                    System.out.printf("TEST LOG IN USERNAME %s", username);
-                    newAccount = new Account(username, false);
+                    try {
+                        username = reader.readLine();
+                        System.out.printf("TEST LOG IN USERNAME %s", username);
+                        newAccount = new Account(username, false);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     accountTypeStr = newAccount.logIn();
                     if (!newAccount.isLogged()) {
                         writer.println("F");
@@ -93,11 +99,19 @@ public class Server {
                         writer.flush();
                     }
                     if (accountTypeStr.equals("student")) {
-                        newAccount = new Student(newAccount.getUsername(), true);
+                        try {
+                            newAccount = new Student(newAccount.getUsername(), true);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
                         writer.println("student");
                         writer.flush();
                     } else if (accountTypeStr.equals("teacher")) {
-                        newAccount = new Teacher(newAccount.getUsername(), true);
+                        try {
+                            newAccount = new Teacher(newAccount.getUsername(), true);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
                         writer.println("teacher");
                         writer.flush();
                     } else if (accountTypeStr.equals("false")) {
@@ -115,23 +129,46 @@ public class Server {
 
         if (newAccount.isLogged()) {
             if (newAccount instanceof Teacher) {
-                Teacher teacher = new Teacher(newAccount.getUsername(), true);
-                int option;
+                Teacher teacher = null;
+                try {
+                    teacher = new Teacher(newAccount.getUsername(), true);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                int option = 0;
                 do {
-                    option = Integer.parseInt(reader.readLine());
+                    try {
+                        option = Integer.parseInt(reader.readLine());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     switch (option) {
                         case 1:
-                            int randomQuiz = Integer.parseInt(reader.readLine());
+                            int randomQuiz = 0;
+                            try {
+                                randomQuiz = Integer.parseInt(reader.readLine());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                             boolean flagError = false;
-                            int numberQuestions;
+                            int numberQuestions = 0;
                             LocalDateTime deadline = null;
                             int duration = 0;
                             switch (randomQuiz) {
                                 case 1:
-                                    numberQuestions = Integer.parseInt(reader.readLine());
+                                    try {
+                                        numberQuestions = Integer.parseInt(reader.readLine());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                     do {
                                         flagError = false;
-                                        String deadlineString = reader.readLine();
+                                        String deadlineString = null;
+                                        try {
+                                            deadlineString = reader.readLine();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
                                         try {
                                             DateTimeFormatter deadlineFormat =
                                                     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -147,22 +184,40 @@ public class Server {
                                     writer.println("F");
                                     writer.flush();
 
-                                    duration = Integer.parseInt(reader.readLine());
+                                    try {
+                                        duration = Integer.parseInt(reader.readLine());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                     teacher.createRandom(numberQuestions, deadline, duration);
                                     writer.println("Success");
                                     writer.flush();
                                     break;
                                 case 2:
-                                    numberQuestions = Integer.parseInt(reader.readLine());
+                                    try {
+                                        numberQuestions = Integer.parseInt(reader.readLine());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                     int[] questionIndex = new int[numberQuestions];
                                     for (int i = 0; i < numberQuestions; i++) {
-                                        int index = Integer.parseInt(reader.readLine());
+                                        int index = 0;
+                                        try {
+                                            index = Integer.parseInt(reader.readLine());
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
                                         questionIndex[i] = index;
                                     }
 
                                     do {
                                         flagError = false;
-                                        String deadlineString = reader.readLine();
+                                        String deadlineString = null;
+                                        try {
+                                            deadlineString = reader.readLine();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
                                         try {
                                             DateTimeFormatter deadlineFormat =
                                                     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -178,7 +233,11 @@ public class Server {
                                     writer.println("F");
                                     writer.flush();
 
-                                    duration = Integer.parseInt(reader.readLine());
+                                    try {
+                                        duration = Integer.parseInt(reader.readLine());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                     teacher.createCustom(numberQuestions, deadline, duration, questionIndex);
                                     writer.println("Success");
                                     writer.flush();
@@ -189,7 +248,12 @@ public class Server {
                             break;
                         case 2:
                             System.out.println("Deleting quiz...");
-                            int quizID = Integer.parseInt(reader.readLine());
+                            int quizID = 0;
+                            try {
+                                quizID = Integer.parseInt(reader.readLine());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                             boolean deleted = teacher.deleteQuiz(quizID);
                             if (deleted) {
                                 System.out.println("Quiz deleted.");
@@ -203,9 +267,14 @@ public class Server {
                             break;
                         case 3:
                             Quiz quiz;
+                            quizID = 0;
                             do {
                                 flagError = false;
-                                quizID = Integer.parseInt(reader.readLine());
+                                try {
+                                    quizID = Integer.parseInt(reader.readLine());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                                 quiz = teacher.findQuiz(quizID);
                                 if (quiz == null) {
                                     writer.println("Failure");
@@ -214,13 +283,23 @@ public class Server {
                                     writer.println("Success");
                                     writer.flush();
 
-                                    int modifyQuizOption = Integer.parseInt(reader.readLine());
+                                    int modifyQuizOption = 0;
+                                    try {
+                                        modifyQuizOption = Integer.parseInt(reader.readLine());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                     switch (modifyQuizOption) {
                                         case 1:
                                             System.out.println("Modifying question indexes...");
                                             int[] newQuestionIndexes = new int[quiz.getNumberQuestions()];
                                             for (int i = 0; i < quiz.getNumberQuestions(); i++) {
-                                                int newIndex = Integer.parseInt(reader.readLine());
+                                                int newIndex = 0;
+                                                try {
+                                                    newIndex = Integer.parseInt(reader.readLine());
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
                                                 newQuestionIndexes[i] = newIndex;
                                             }
                                             quiz.setQuestionsIndex(newQuestionIndexes);
@@ -232,7 +311,12 @@ public class Server {
                                             System.out.println("Modifying question point values...");
                                             int[] questionPoints = quiz.getQuestionPoints();
                                             for (int i = 0; i < questionPoints.length; i++) {
-                                                int newPoint = Integer.parseInt(reader.readLine());
+                                                int newPoint = 0;
+                                                try {
+                                                    newPoint = Integer.parseInt(reader.readLine());
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
                                                 questionPoints[i] = newPoint;
                                             }
                                             quiz.setQuestionPoints(questionPoints);
@@ -243,7 +327,12 @@ public class Server {
                                         case 3:
                                             do {
                                                 flagError = false;
-                                                String newDeadline = reader.readLine();
+                                                String newDeadline = null;
+                                                try {
+                                                    newDeadline = reader.readLine();
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
                                                 try {
                                                     DateTimeFormatter deadlineFormat =
                                                             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -262,7 +351,12 @@ public class Server {
                                             } while (flagError);
                                             break;
                                         case 4:
-                                            duration = Integer.parseInt(reader.readLine());
+                                            duration = 0;
+                                            try {
+                                                duration = Integer.parseInt(reader.readLine());
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
                                             quiz.setDuration(duration);
                                             teacher.overwriteQuiz(quiz.getQuizID(), quiz);
                                             writer.println("Success");
@@ -278,8 +372,14 @@ public class Server {
 
                             break;
                         case 4:
-                            String studentUsername = reader.readLine();
-                            int wantedID = Integer.parseInt(reader.readLine());
+                            String studentUsername = null;
+                            int wantedID = 0;
+                            try {
+                                studentUsername = reader.readLine();
+                                wantedID = Integer.parseInt(reader.readLine());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                             String[] studentGradeAndTime = teacher.loadGrade(studentUsername, wantedID);
                             if (studentGradeAndTime == null) {
                                 writer.println("Failure");
@@ -295,38 +395,76 @@ public class Server {
                             break;
                         case 5:
                             System.out.println("Modifying question pool...");
-                            int questionPoolMod = Integer.parseInt(reader.readLine());
+                            int questionPoolMod = 0;
+                            try {
+                                questionPoolMod = Integer.parseInt(reader.readLine());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                             switch (questionPoolMod) {
                                 case 1:
                                     System.out.println("Adding a question...");
-                                    int questionTypeOption = Integer.parseInt(reader.readLine());
+                                    int questionTypeOption = 0;
+                                    try {
+                                        questionTypeOption = Integer.parseInt(reader.readLine());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                     switch (questionTypeOption) {
                                         case 1:
                                             System.out.println("Adding a multiple choice question...");
-                                            String prompt = reader.readLine();
-                                            int multipleChoiceOptions = Integer.parseInt(reader.readLine());
+                                            String prompt = null;
+                                            int multipleChoiceOptions = 0;
+                                            try {
+                                                prompt = reader.readLine();
+                                                multipleChoiceOptions = Integer.parseInt(reader.readLine());
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
                                             String[] optionPrompts = new String[multipleChoiceOptions];
                                             for (int i = 0; i < multipleChoiceOptions; i++) {
-                                                String optionPrompt = reader.readLine();
+                                                String optionPrompt = null;
+                                                try {
+                                                    optionPrompt = reader.readLine();
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
                                                 optionPrompts[i] = optionPrompt;
                                             }
-                                            String answer = reader.readLine();
+                                            String answer = null;
+                                            try {
+                                                answer = reader.readLine();
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
                                             teacher.addMultipleQuestion(prompt, answer, optionPrompts);
                                             writer.println("Success");
                                             writer.flush();
                                             break;
                                         case 2:
                                             System.out.println("Adding a response question...");
-                                            prompt = reader.readLine();
-                                            answer = reader.readLine();
+                                            prompt = null;
+                                            answer = null;
+                                            try {
+                                                prompt = reader.readLine();
+                                                answer = reader.readLine();
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
                                             teacher.addResponseQuestion(prompt, answer);
                                             writer.println("Success");
                                             writer.flush();
                                             break;
                                         case 3:
                                             System.out.println("Adding a true/false question...");
-                                            prompt = reader.readLine();
-                                            answer = reader.readLine();
+                                            prompt = null;
+                                            answer = null;
+                                            try {
+                                                prompt = reader.readLine();
+                                                answer = reader.readLine();
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
                                             teacher.addResponseQuestion(prompt, answer);
                                             writer.println("Success");
                                             writer.flush();
@@ -336,7 +474,12 @@ public class Server {
                                     }
                                     break;
                                 case 2:
-                                    int questionNumber = Integer.parseInt(reader.readLine());
+                                    int questionNumber = 0;
+                                    try {
+                                        questionNumber = Integer.parseInt(reader.readLine());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                     teacher.deleteQuestion(questionNumber);
                                     writer.println("Success");
                                     writer.flush();
@@ -349,7 +492,12 @@ public class Server {
                             break;
                         case 6:
                             boolean modified;
-                            String newUsername = reader.readLine();
+                            String newUsername = null;
+                            try {
+                                newUsername = reader.readLine();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                             modified = teacher.modifyAccount(newUsername);
                             if (!modified) {
                                 writer.println("Failure");
@@ -375,19 +523,34 @@ public class Server {
                 } while (option != 8);
 
             } else if (newAccount instanceof Student) {
-                Student student = new Student(newAccount.getUsername(), true);
+                Student student = null;
+                try {
+                    student = new Student(newAccount.getUsername(), true);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
                 boolean flagError = false;
 
                 int option;
                 do {
                     System.out.println("TEST POINT 1");
-                    option = Integer.parseInt(reader.readLine());
+                    option = 0;
+                    try {
+                        option = Integer.parseInt(reader.readLine());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     System.out.printf("TEST OPTION : %d", option);
                     switch (option) {
                         case 1:
                             break;
                         case 2:
-                            int quizID = Integer.parseInt(reader.readLine());
+                            int quizID = 0;
+                            try {
+                                quizID = Integer.parseInt(reader.readLine());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                             String quizGrade = student.loadGrade(quizID);
                             writer.println(quizGrade);
                             writer.flush();
@@ -395,7 +558,12 @@ public class Server {
                         case 3:
                             System.out.println("Modifying account...");
                             boolean modified;
-                            String newUsername = reader.readLine();
+                            String newUsername = null;
+                            try {
+                                newUsername = reader.readLine();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                             modified = student.modifyAccount(newUsername);
                             if (!modified) {
                                 writer.println("Failure");
@@ -422,9 +590,4 @@ public class Server {
             }
         }
     }
-
-
-
-
-
-    }
+}

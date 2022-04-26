@@ -15,7 +15,7 @@ Implemented Classes:
 
 **Client.java**
 
-**Server.java**
+**ServerThread.java**
 
 **Account.java:**
 
