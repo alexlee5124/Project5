@@ -25,6 +25,10 @@ public class ClientGUI extends JComponent implements Runnable {
     JPanel studentPanel;
     JPanel teacherPanel;
     JPanel modifyPanel;
+    JPanel questionPoolPanel;
+    JPanel addQuestionPanel;
+    JPanel addMultipleChoicePanel;
+    JPanel multipleChoiceOptionPanel;
     
     
     /** Initial Buttons and text fields */
@@ -54,8 +58,24 @@ public class ClientGUI extends JComponent implements Runnable {
     JButton modifyButtonS;
     JLabel modifyPrompt = new JLabel("Enter a new username");
 
+    /** Question pool panel components*/
+    JLabel questionPoolPrompt = new JLabel("What would you like to do?");
+    JComboBox<String> questionPoolOptions = new JComboBox();
+    JButton questionPoolSelect;
 
+    /** Add question panel components*/
+    JLabel addQuestionPrompt = new JLabel("What is the question type?");
+    JComboBox<String> addQuestionOptions = new JComboBox();
+    JButton addQuestionSelect;
 
+    /** Add multiple choice panel components*/
+    JLabel addMultipleChoicePrompt = new JLabel("What is the question prompt?");
+    JTextField multipleChoicePromptText;
+    JLabel numberMultipleChoiceOptionsPrompt = new JLabel("How many options will this question have?");
+    JComboBox<String> numberMultipleChoiceOptions = new JComboBox();
+    JButton addMultipleChoiceSelect;
+
+    /** Add multiple choice options panel components*/
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new ClientGUI());
@@ -172,6 +192,8 @@ public class ClientGUI extends JComponent implements Runnable {
                     case 4:
                         break;
                     case 5:
+                        loadQuestionPoolPanel();
+
                         break;
                     case 6:
                         loadModifyPanel("T");
@@ -291,15 +313,76 @@ public class ClientGUI extends JComponent implements Runnable {
         }
     };
 
+    ActionListener questionPoolListener = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == questionPoolSelect) {
+                questionPoolPanel.setVisible(false);
+                int questionPoolMod = questionPoolOptions.getSelectedIndex() + 1;
+                writer.println(questionPoolMod);
+                writer.flush();
+
+                switch (questionPoolMod) {
+                    case 1:
+                        loadAddQuestionPanel();
+
+                        break;
+                    case 2:
+                        break;
+                    case 3:
+                         break;
+                    default:
+                         break;
+                }
+            }
+        }
+    };
+
+    ActionListener addQuestionListener = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == addQuestionSelect) {
+                addQuestionPanel.setVisible(false);
+                int questionTypeOption = addQuestionOptions.getSelectedIndex() + 1;
+                writer.println(questionTypeOption);
+                writer.flush();
+
+                switch (questionTypeOption) {
+                    case 1:
+                        loadAddMultipleChoicePanel();
+
+                         break;
+                    case 2:
+                        break;
+                    case 3:
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    };
+
+    ActionListener addMultipleChoiceListener = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == addMultipleChoiceSelect) {
+                addMultipleChoicePanel.setVisible(false);
+                String prompt = multipleChoicePromptText.getText();
+                writer.println(prompt);
+                writer.flush();
+
+                int multipleChoiceOptions = numberMultipleChoiceOptions.getSelectedIndex() + 1;
+                writer.println(multipleChoiceOptions);
+                writer.flush();
+
+                for (int i = 0 ; i < multipleChoiceOptions ; i++) {
+                    loadMultipleChoiceOptionPanel();
+                }
+            }
+        }
+    };
 
     /** ACTION LISTENERS */
 
     /** LOAD PANELS */
-
-    public void loadInitialPanel() {
-        initialPanel.add(exitButton);
-
-    }
 
     public void createAccount() {
         createPanel = new JPanel();
@@ -392,6 +475,67 @@ public class ClientGUI extends JComponent implements Runnable {
 
         content.add(studentPanel, BorderLayout.CENTER);
         studentPanel.setVisible(true);
+
+    }
+
+    public void loadQuestionPoolPanel() {
+        questionPoolPanel = new JPanel();
+        questionPoolOptions.addItem("Add question");
+        questionPoolOptions.addItem("Delete question");
+        questionPoolOptions.addItem("Modify question");
+        questionPoolSelect = new JButton("Select");
+
+        questionPoolPanel.add(questionPoolPrompt);
+        questionPoolPanel.add(questionPoolOptions);
+        questionPoolPanel.add(questionPoolSelect);
+
+        questionPoolSelect.addActionListener(questionPoolListener);
+
+        content.add(questionPoolPanel, BorderLayout.CENTER);
+        questionPoolPanel.setVisible(true);
+    }
+
+    public void loadAddQuestionPanel() {
+        addQuestionPanel = new JPanel();
+
+        addQuestionOptions.addItem("Multiple choice");
+        addQuestionOptions.addItem("Free response");
+        addQuestionOptions.addItem("True/False");
+        addQuestionSelect = new JButton("Select");
+        addQuestionSelect.addActionListener(addQuestionListener);
+
+        addQuestionPanel.add(addQuestionPrompt);
+        addQuestionPanel.add(addQuestionOptions);
+        addQuestionPanel.add(addQuestionSelect);
+
+        content.add(addQuestionPanel, BorderLayout.CENTER);
+        addQuestionPanel.setVisible(true);
+    }
+
+    public void loadAddMultipleChoicePanel() {
+        addMultipleChoicePanel = new JPanel();
+
+        multipleChoicePromptText = new JTextField(30);
+        numberMultipleChoiceOptions.addItem("1");
+        numberMultipleChoiceOptions.addItem("2");
+        numberMultipleChoiceOptions.addItem("3");
+        numberMultipleChoiceOptions.addItem("4");
+        addMultipleChoiceSelect = new JButton("Add");
+        addMultipleChoiceSelect.addActionListener(addMultipleChoiceListener);
+
+        addMultipleChoicePanel.add(addMultipleChoicePrompt);
+        addMultipleChoicePanel.add(multipleChoicePromptText);
+        addMultipleChoicePanel.add(numberMultipleChoiceOptionsPrompt);
+        addMultipleChoicePanel.add(numberMultipleChoiceOptions);
+        addMultipleChoicePanel.add(addMultipleChoiceSelect);
+
+        content.add(addMultipleChoicePanel, BorderLayout.CENTER);
+        addMultipleChoicePanel.setVisible(true);
+    }
+
+    public void loadMultipleChoiceOptionPanel() {
+        multipleChoiceOptionPanel = new JPanel();
+
 
     }
 
