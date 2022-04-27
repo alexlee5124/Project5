@@ -193,7 +193,6 @@ public class ClientGUI extends JComponent implements Runnable {
                         break;
                     case 5:
                         loadQuestionPoolPanel();
-
                         break;
                     case 6:
                         loadModifyPanel("T");
