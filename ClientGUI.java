@@ -638,6 +638,7 @@ public class ClientGUI extends JComponent implements Runnable {
 
     public void loadAddFreeResponsePanel() {
         addFreeResponsePanel = new JPanel();
+        addFreeResponsePanel.setLayout(new GridLayout( 20, 2));
 
         freeResponsePromptText = new JTextField(30);
         freeResponseAnswerText = new JTextField(30);
