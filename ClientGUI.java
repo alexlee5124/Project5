@@ -31,8 +31,8 @@ public class ClientGUI extends JComponent implements Runnable {
     JPanel multipleChoiceOptionPanel;
     JPanel addFreeResponsePanel;
     JPanel createQuizPanel;
-    
-    
+
+
     /** Initial Buttons and text fields */
     JButton createButton;
     JButton logInButton;
@@ -208,7 +208,6 @@ public class ClientGUI extends JComponent implements Runnable {
                         loadCreateQuizPanel();
                         break;
                     case 2:
-                        loadAddFreeResponsePanel();
                          break;
                     case 3:
                         break;
@@ -368,9 +367,9 @@ public class ClientGUI extends JComponent implements Runnable {
                 switch (questionTypeOption) {
                     case 1:
                         loadAddMultipleChoicePanel();
-
                          break;
                     case 2:
+                        loadAddFreeResponsePanel();
                         break;
                     case 3:
                         break;
