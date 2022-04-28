@@ -564,6 +564,24 @@ public class ClientGUI extends JComponent implements Runnable {
         addQuestionPanel.setVisible(true);
     }
 
+    public void loadAddFreeResponsePanel() {
+        addFreeResponsePanel = new JPanel();
+
+        freeResponsePromptText = new JTextField(30);
+        freeResponseAnswerText = new JTextField(30);
+        addFreeResponseSelect = new JButton("Add");
+        addFreeResponseSelect.addActionListener(addFreeResponseListener);
+
+        addFreeResponsePanel.add(addFreeResponsePrompt);
+        addFreeResponsePanel.add(freeResponsePromptText);
+        addFreeResponsePanel.add(addFreeResponseAnswer);
+        addFreeResponsePanel.add(freeResponseAnswerText);
+        addFreeResponsePanel.add(addFreeResponseSelect);
+
+        content.add(addFreeResponsePanel, BorderLayout.CENTER);
+        addFreeResponsePanel.setVisible(true);
+    }
+    
     public void loadAddMultipleChoicePanel() {
         addMultipleChoicePanel = new JPanel();
 
