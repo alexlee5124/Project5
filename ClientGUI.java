@@ -67,6 +67,14 @@ public class ClientGUI extends JComponent implements Runnable {
     JComboBox<String> addQuestionOptions = new JComboBox();
     JButton addQuestionSelect;
 
+    /**Add free response panel components*/
+    JLabel addFreeResponsePrompt = new JLabel("What is the question prompt?");
+    JTextField freeResponsePromptText;
+    JLabel addFreeResponseAnswer = new JLabel("What is the answer to your prompt?");
+    JTextField freeResponseAnswerText;
+    JButton addFreeResponseSelect;
+
+    
     /** Add multiple choice panel components*/
     JLabel addMultipleChoicePrompt = new JLabel("What is the question prompt?");
     JTextField multipleChoicePromptText;
@@ -357,6 +365,7 @@ public class ClientGUI extends JComponent implements Runnable {
 
                          break;
                     case 2:
+                        loadAddFreeResponsePanel();
                         break;
                     case 3:
                         loadTrueFalsePanel();
@@ -369,6 +378,23 @@ public class ClientGUI extends JComponent implements Runnable {
         }
     };
 
+    ActionListener addFreeResponseListener = new ActionListener() {
+        public void actionPerformed(ActionEvent ae) {
+            if(ae.getSource() == addFreeResponseSelect) {
+                addFreeResponsePanel.setVisible(false);
+                String prompt = freeResponsePromptText.getText();
+                String answer = freeResponseAnswerText.getText();
+
+                writer.println(prompt);
+                writer.flush();
+                writer.println(answer);
+                writer.flush();
+
+                loadTeacherPanel();
+            }
+        }
+    };
+    
     ActionListener addMultipleChoiceListener = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == addMultipleChoiceSelect) {
