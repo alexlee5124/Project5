@@ -3,9 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.time.LocalDateTime;
-import java.util.Scanner;
-import javax.swing.*;
+import javax.swing.*; //172.20.10.3
 import java.awt.*;
 import java.awt.event.*;
 
@@ -29,6 +27,7 @@ public class ClientGUI extends JComponent implements Runnable {
     JPanel addQuestionPanel;
     JPanel addMultipleChoicePanel;
     JPanel multipleChoiceOptionPanel;
+    JPanel addTrueFalsePanel;
     
     
     /** Initial Buttons and text fields */
@@ -47,7 +46,6 @@ public class ClientGUI extends JComponent implements Runnable {
     JLabel teacherMenuPrompt = new JLabel("What would you like to do?");
     JButton teacherMenuSelect;
     JComboBox<String> teacherMenuOptions= new JComboBox();
-
 
     /** Student panel components */
     JLabel studentMenuPrompt = new JLabel("What would you like to do?");
@@ -75,17 +73,17 @@ public class ClientGUI extends JComponent implements Runnable {
     JLabel numberMultipleChoiceOptionsPrompt = new JLabel("How many options will this question have?");
     JComboBox<String> numberMultipleChoiceOptions = new JComboBox();
     JButton addMultipleChoiceSelect;
-    int multipleChoiceOptions;
 
     /** Add multiple choice options panel components*/
-    JLabel multipleChoiceOptionPrompt;
-    JButton multipleChoiceOptionPromptSubmit;
-    JTextField[] optionInputs;
-    JComboBox<String> correctAnswer = new JComboBox<>();
-    JLabel correctAnswerPrompt = new JLabel("What is the correct option?");
 
+    /** Add true false choice panel components*/
+    JLabel addTrueFalsePrompt = new JLabel("What is the question prompt?");
+    JTextField trueFalsePromptText;
+    JLabel answerTrueFalseOptionsPrompt = new JLabel("What is the correct option?");
+    JComboBox<String> trueFalseAnswerChoice = new JComboBox<>();
+    JButton addTrueFalseSelect;
 
-
+    /** Main method for threading and whatnot*/
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new ClientGUI());
     }
@@ -258,6 +256,7 @@ public class ClientGUI extends JComponent implements Runnable {
                         break;
                     default:
                         break;
+
                 }
             } else if (e.getSource() == exitButton) {
                 writer.println(5);
@@ -331,6 +330,7 @@ public class ClientGUI extends JComponent implements Runnable {
                 switch (questionPoolMod) {
                     case 1:
                         loadAddQuestionPanel();
+
                         break;
                     case 2:
                         break;
@@ -359,6 +359,8 @@ public class ClientGUI extends JComponent implements Runnable {
                     case 2:
                         break;
                     case 3:
+                        loadTrueFalsePanel();
+
                         break;
                     default:
                         break;
@@ -375,40 +377,31 @@ public class ClientGUI extends JComponent implements Runnable {
                 writer.println(prompt);
                 writer.flush();
 
-                multipleChoiceOptions = numberMultipleChoiceOptions.getSelectedIndex() + 1;
+                int multipleChoiceOptions = numberMultipleChoiceOptions.getSelectedIndex() + 1;
                 writer.println(multipleChoiceOptions);
                 writer.flush();
 
-                loadMultipleChoiceOptionPanel(multipleChoiceOptions);
-                multipleChoiceOptionPanel.setVisible(true);
+                for (int i = 0 ; i < multipleChoiceOptions ; i++) {
+                    loadMultipleChoiceOptionPanel();
+                }
             }
         }
     };
 
-    ActionListener multipleChoiceOptionListener = new ActionListener() {
+    ActionListener addTrueFalseListener = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == multipleChoiceOptionPromptSubmit) {
-                multipleChoiceOptionPanel.setVisible(false);
-                for (int i = 0 ; i < multipleChoiceOptions ; i++) {
-                    String multipleChoiceOption = optionInputs[i].getText();
-                    if (!multipleChoiceOption.isEmpty()) {
-                        writer.println(multipleChoiceOption);
-                        writer.flush();
-                    } else {
-                        writer.println(" ");
-                        writer.flush();
-                    }
-                }
-                String answer = String.valueOf(correctAnswer.getSelectedIndex() + 1);
+            if (e.getSource() == addTrueFalseSelect) {
+                addTrueFalsePanel.setVisible(false);
+                String prompt = trueFalsePromptText.getText();
+                String answer = trueFalseAnswerChoice.getItemAt(trueFalseAnswerChoice.getSelectedIndex());
+                writer.println(prompt);
+                writer.flush();
                 writer.println(answer);
                 writer.flush();
+
+                JOptionPane.showMessageDialog(null, "Question added!\n" +
+                        "Returning to Teacher Main Menu", "Added!", JOptionPane.INFORMATION_MESSAGE);
                 loadTeacherPanel();
-                JOptionPane.showMessageDialog(null, "Multiple choice question " +
-                                "added!",
-                        "Question added",
-                        JOptionPane.INFORMATION_MESSAGE);
-
-
             }
         }
     };
@@ -452,6 +445,13 @@ public class ClientGUI extends JComponent implements Runnable {
     public void loadTeacherPanel() {
         teacherPanel = new JPanel();
         teacherMenuSelect = new JButton("Select");
+        teacherMenuOptions.addItem("Create quiz");
+        teacherMenuOptions.addItem("Delete quiz");
+        teacherMenuOptions.addItem("Modify quiz");
+        teacherMenuOptions.addItem("View student submissions");
+        teacherMenuOptions.addItem("Edit question pool");
+        teacherMenuOptions.addItem("Modify account");
+        teacherMenuOptions.addItem("Delete account");
 
         teacherPanel.add(teacherMenuPrompt);
         teacherPanel.add(teacherMenuOptions);
@@ -559,57 +559,40 @@ public class ClientGUI extends JComponent implements Runnable {
         addMultipleChoicePanel.setVisible(true);
     }
 
-    public void loadMultipleChoiceOptionPanel(int numberOptions) {
+    public void loadMultipleChoiceOptionPanel() {
         multipleChoiceOptionPanel = new JPanel();
-        multipleChoiceOptionPanel.setLayout(new GridLayout(numberOptions + 20, 2));
-        optionInputs = new JTextField[numberOptions];
-
-        for (int i = 0 ; i < numberOptions ; i++) {
-            String multipleChoiceOptionPanelPrompt = String.format("What will be the option prompt for option %d?",
-                    i + 1);
-            multipleChoiceOptionPrompt = new JLabel(multipleChoiceOptionPanelPrompt);
-            optionInputs[i] = new JTextField(20);
-            multipleChoiceOptionPanel.add(multipleChoiceOptionPrompt);
-            multipleChoiceOptionPanel.add(optionInputs[i]);
-            correctAnswer.addItem(String.valueOf(i + 1));
-        }
-        multipleChoiceOptionPromptSubmit = new JButton("Submit");
-        multipleChoiceOptionPromptSubmit.addActionListener(multipleChoiceOptionListener);
 
 
-        multipleChoiceOptionPanel.add(correctAnswerPrompt);
-        multipleChoiceOptionPanel.add(correctAnswer);
-        multipleChoiceOptionPanel.add(multipleChoiceOptionPromptSubmit);
+    }
 
-        content.add(multipleChoiceOptionPanel, BorderLayout.CENTER);
-        multipleChoiceOptionPanel.setVisible(true);
+    public void loadTrueFalsePanel() {
+        addTrueFalsePanel = new JPanel();
+
+        trueFalsePromptText = new JTextField(30);
+        trueFalseAnswerChoice.addItem("T");
+        trueFalseAnswerChoice.addItem("F");
+        addTrueFalseSelect = new JButton("Add");
+        addTrueFalseSelect.addActionListener(addTrueFalseListener);
+
+        addTrueFalsePanel.add(addTrueFalsePrompt);
+        addTrueFalsePanel.add(trueFalsePromptText);
+        addTrueFalsePanel.add(answerTrueFalseOptionsPrompt);
+        addTrueFalsePanel.add(trueFalseAnswerChoice);
+        addTrueFalsePanel.add(addTrueFalseSelect);
+
+        content.add(addTrueFalsePanel, BorderLayout.CENTER);
+        addTrueFalsePanel.setVisible(true);
     }
 
     /** LOAD PANELS */
 
     public void run() {
-        /** Combo box Items */
 
-
-        /** teacher panel combo box */
-        teacherMenuOptions.addItem("Create quiz");
-        teacherMenuOptions.addItem("Delete quiz");
-        teacherMenuOptions.addItem("Modify quiz");
-        teacherMenuOptions.addItem("View student submissions");
-        teacherMenuOptions.addItem("Edit question pool");
-        teacherMenuOptions.addItem("Modify account");
-        teacherMenuOptions.addItem("Delete account");
-
-
-
-
-        /** Combo box Items */
-        //String hostname = "localhost";
+        String hostname = "localhost";
         int port = 4242;
-        String host = "localhost";
 
         try {
-            socket = new Socket(host, port);
+            socket = new Socket(hostname, port);
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             writer = new PrintWriter(socket.getOutputStream());
         } catch (IOException e) {
@@ -636,6 +619,8 @@ public class ClientGUI extends JComponent implements Runnable {
         createButton.addActionListener(initialListener);
         logInButton.addActionListener(initialListener);
         exitButton.addActionListener(initialListener);
+
+        /** Log in panel */
 
         /** Create content and add paint object to it */
         content = frame.getContentPane();
