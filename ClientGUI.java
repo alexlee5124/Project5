@@ -31,6 +31,7 @@ public class ClientGUI extends JComponent implements Runnable {
     JPanel multipleChoiceOptionPanel;
     JPanel addFreeResponsePanel;
     JPanel createQuizPanel;
+    JPanel addTrueFalsePanel;
 
 
     /** Initial Buttons and text fields */
@@ -101,6 +102,13 @@ public class ClientGUI extends JComponent implements Runnable {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new ClientGUI());
     }
+
+    /** Add true false choice panel components*/
+    JLabel addTrueFalsePrompt = new JLabel("What is the question prompt?");
+    JTextField trueFalsePromptText;
+    JLabel answerTrueFalseOptionsPrompt = new JLabel("What is the correct option?");
+    JComboBox<String> trueFalseAnswerChoice = new JComboBox<>();
+    JButton addTrueFalseSelect;
 
     /** ACTION LISTENERS */
     ActionListener initialListener = new ActionListener() {
@@ -372,6 +380,7 @@ public class ClientGUI extends JComponent implements Runnable {
                         loadAddFreeResponsePanel();
                         break;
                     case 3:
+                        loadTrueFalsePanel();
                         break;
                     default:
                         break;
@@ -426,10 +435,13 @@ public class ClientGUI extends JComponent implements Runnable {
         }
     };
 
+
+
     ActionListener createQuizListener = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == createQuizTypeSelect) {
                 int quizType = createQuizType.getSelectedIndex() + 1;
+
             }
         }
     };
@@ -450,6 +462,26 @@ public class ClientGUI extends JComponent implements Runnable {
             }
         }
     };
+
+    ActionListener addTrueFalseListener = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == addTrueFalseSelect) {
+                    addTrueFalsePanel.setVisible(false);
+                    String prompt = trueFalsePromptText.getText();
+                    String answer = trueFalseAnswerChoice.getItemAt(trueFalseAnswerChoice.getSelectedIndex());
+                    writer.println(prompt);
+                    writer.flush();
+                    writer.println(answer);
+                    writer.flush();
+                    loadTeacherPanel();
+                    JOptionPane.showMessageDialog(null, "Question added!\n" +
+                            "Returning to Teacher Main Menu", "Added!", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+        };
+
+
+
 
     /** ACTION LISTENERS */
 
@@ -634,11 +666,14 @@ public class ClientGUI extends JComponent implements Runnable {
         createQuizPanel.add(createQuizType);
         createQuizPanel.add(createQuizTypeSelect);
 
+        content.add(createQuizPanel, BorderLayout.CENTER);
+        createQuizPanel.setVisible(true);
+
+
     }
 
     public void loadAddFreeResponsePanel() {
         addFreeResponsePanel = new JPanel();
-        addFreeResponsePanel.setLayout(new GridLayout( 20, 2));
 
         freeResponsePromptText = new JTextField(30);
         freeResponseAnswerText = new JTextField(30);
@@ -654,7 +689,29 @@ public class ClientGUI extends JComponent implements Runnable {
         content.add(addFreeResponsePanel, BorderLayout.CENTER);
         addFreeResponsePanel.setVisible(true);
     }
-    /** LOAD PANELS */
+
+    public void loadTrueFalsePanel() {
+        addTrueFalsePanel = new JPanel();
+
+            trueFalsePromptText = new JTextField(30);
+            trueFalseAnswerChoice.addItem("T");
+            trueFalseAnswerChoice.addItem("F");
+            addTrueFalseSelect = new JButton("Add");
+            addTrueFalseSelect.addActionListener(addTrueFalseListener);
+
+            addTrueFalsePanel.add(addTrueFalsePrompt);
+            addTrueFalsePanel.add(trueFalsePromptText);
+            addTrueFalsePanel.add(answerTrueFalseOptionsPrompt);
+            addTrueFalsePanel.add(trueFalseAnswerChoice);
+            addTrueFalsePanel.add(addTrueFalseSelect);
+
+            content.add(addTrueFalsePanel, BorderLayout.CENTER);
+            addTrueFalsePanel.setVisible(true);
+        }
+
+
+
+        /** LOAD PANELS */
 
     public void run() {
         /** Combo box Items */
