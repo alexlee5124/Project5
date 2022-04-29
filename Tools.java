@@ -150,4 +150,16 @@ public class Tools {
         }
         return returnArray;
     }
+
+    /** retrieve number of questions in the pool
+     * CS1800 Spring 2022, Project 4
+     * @author Alex Lee
+     * @version 4/14/2022
+     */
+    public int getQuestionPoolSize() {
+        int size = 0;
+        String questionFile = loadTextFile("Questions.txt");
+        String[] lines = questionFile.split("/");
+        return lines.length;
+    }
 }
