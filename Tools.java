@@ -33,6 +33,30 @@ public class Tools {
         return entireFile;
     }
 
+    /** Get a list of all questions in the question document
+     * CS1800 Spring 2022, Project 4
+     * @author Quinn Bell0
+     * @version 4/30/2022
+     */
+    public ArrayList<String> getQuestionList()
+    {
+        ArrayList<String> questionList = new ArrayList<String>();
+
+        try (BufferedReader bfr = new BufferedReader(new FileReader("Questions.txt")))
+        {
+            String line;
+
+            while ((line = bfr.readLine()) != null)
+                questionList.add(line);
+
+        } catch (IOException ie)
+        {
+            System.out.println("Either the file doesn't exist or the file is in the wrong format!");
+        }
+
+        return questionList;
+    }
+
     /** Take maximum number of values and a size and return an integer array of random values of size and
      * less than maximum value
      * CS1800 Spring 2022, Project 4
