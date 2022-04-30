@@ -10,6 +10,8 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class ClientGUI extends JComponent implements Runnable {
+    Tools tools = new Tools();
+    
     Socket socket = null;
     BufferedReader reader = null;
     PrintWriter writer = null;
@@ -27,6 +29,7 @@ public class ClientGUI extends JComponent implements Runnable {
     JPanel modifyPanel;
     JPanel questionPoolPanel;
     JPanel addQuestionPanel;
+    JPanel deleteQuestionPanel;
     JPanel addMultipleChoicePanel;
     JPanel multipleChoiceOptionPanel;
     JPanel addFreeResponsePanel;
@@ -71,6 +74,11 @@ public class ClientGUI extends JComponent implements Runnable {
     JLabel addQuestionPrompt = new JLabel("What is the question type?");
     JComboBox<String> addQuestionOptions = new JComboBox();
     JButton addQuestionSelect;
+    
+    /** Delete question panel components*/
+    JLabel deleteQuestionPrompt = new JLabel("Which question would you like to remove?");
+    JComboBox<String> deleteQuestionOptions = new JComboBox();
+    JButton deleteQuestionSelect;
 
     /** Add multiple choice panel components*/
     JLabel addMultipleChoicePrompt = new JLabel("What is the question prompt?");
@@ -354,6 +362,7 @@ public class ClientGUI extends JComponent implements Runnable {
                         loadAddQuestionPanel();
                         break;
                     case 2:
+                        loadDeleteQuestionPanel();
                         break;
                     case 3:
                          break;
@@ -385,6 +394,25 @@ public class ClientGUI extends JComponent implements Runnable {
                     default:
                         break;
                 }
+            }
+        }
+    };
+    
+    ActionListener deleteQuestionListener = new ActionListener() {
+        public void actionPerformed(ActionEvent ae) {
+            if (ae.getSource() == deleteQuestionSelect) {
+                deleteQuestionPanel.setVisible(false);
+                writer.println(2);
+                writer.flush();
+                int deleteOpts = deleteQuestionOptions.getSelectedIndex() + 1;
+                writer.println(deleteOpts);
+                writer.flush();
+
+                loadTeacherPanel();
+                JOptionPane.showMessageDialog(null, "Question " +
+                                "deleted!",
+                        "Question deleted",
+                        JOptionPane.INFORMATION_MESSAGE);
             }
         }
     };
@@ -606,6 +634,24 @@ public class ClientGUI extends JComponent implements Runnable {
 
         content.add(addQuestionPanel, BorderLayout.CENTER);
         addQuestionPanel.setVisible(true);
+    }
+    
+    public void loadDeleteQuestionPanel() {
+        deleteQuestionPanel = new JPanel();
+
+        ArrayList<String> questions = tools.getQuestionList();
+        for(String question: questions)
+            deleteQuestionOptions.addItem(question);
+
+        deleteQuestionSelect = new JButton("Delete");
+        deleteQuestionSelect.addActionListener(deleteQuestionListener);
+
+        deleteQuestionPanel.add(deleteQuestionPrompt);
+        deleteQuestionPanel.add(deleteQuestionOptions);
+        deleteQuestionPanel.add(deleteQuestionSelect);
+
+        content.add(deleteQuestionPanel, BorderLayout.CENTER);
+        deleteQuestionPanel.setVisible(true);
     }
 
     public void loadAddMultipleChoicePanel() {
