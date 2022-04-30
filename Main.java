@@ -106,7 +106,7 @@ public class Main {
                                     System.out.println("What will be the duration of this quiz (minutes)?");
                                     duration = tools.receiveValidInt(0, scan);
 
-                                    teacher.createRandom(numberQuestions, deadline, duration);
+                                    teacher.createRandom(numberQuestions, deadline, duration, 4);
                                     break;
                                 case 2:
                                     System.out.println("How many questions would you like this quiz to have?");
@@ -136,7 +136,7 @@ public class Main {
                                     System.out.println("What will be the duration" +
                                             " of this quiz (minutes)?");
                                     duration = tools.receiveValidInt(0, scan);
-                                    teacher.createCustom(numberQuestions, deadline, duration, questionIndex);
+                                    teacher.createCustom(numberQuestions, deadline, duration, questionIndex, new int[]{0});
                                     break;
                                 default:
                                     break;
