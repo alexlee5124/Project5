@@ -152,12 +152,14 @@ public class ServerThread implements Runnable
                             }
                             boolean flagError = false;
                             int numberQuestions = 0;
+                            int questionValue = 0;
                             LocalDateTime deadline = null;
                             int duration = 0;
                             switch (randomQuiz) {
                                 case 1:
                                     try {
                                         numberQuestions = Integer.parseInt(reader.readLine());
+                                        questionValue = Integer.parseInt(reader.readLine());
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
@@ -189,7 +191,7 @@ public class ServerThread implements Runnable
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
-                                    teacher.createRandom(numberQuestions, deadline, duration);
+                                    teacher.createRandom(numberQuestions, deadline, duration, questionValue);
                                     writer.println("Success");
                                     writer.flush();
                                     break;
@@ -238,7 +240,22 @@ public class ServerThread implements Runnable
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
-                                    teacher.createCustom(numberQuestions, deadline, duration, questionIndex);
+
+                                    int[] questionVals = new int[numberQuestions];
+                                    String[] qValsFromUser = new String[0];
+
+                                    try
+                                    {
+                                        qValsFromUser = reader.readLine().split(",");
+                                    } catch (IOException e)
+                                    {
+                                        e.printStackTrace();
+                                    }
+
+                                    for (int i = 0; i < qValsFromUser.length; i++)
+                                        questionVals[i] = Integer.parseInt(qValsFromUser[i]);
+
+                                    teacher.createCustom(numberQuestions, deadline, duration, questionIndex, questionVals);
                                     writer.println("Success");
                                     writer.flush();
                                     break;
