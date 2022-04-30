@@ -4,15 +4,13 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.time.LocalDateTime;
-import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.Scanner;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
 public class ClientGUI extends JComponent implements Runnable {
-    Tools tools = new Tools();
-    
     Socket socket = null;
     BufferedReader reader = null;
     PrintWriter writer = null;
@@ -30,13 +28,13 @@ public class ClientGUI extends JComponent implements Runnable {
     JPanel modifyPanel;
     JPanel questionPoolPanel;
     JPanel addQuestionPanel;
-    JPanel deleteQuestionPanel;
     JPanel addMultipleChoicePanel;
     JPanel multipleChoiceOptionPanel;
     JPanel addFreeResponsePanel;
     JPanel createQuizPanel;
     JPanel addTrueFalsePanel;
-
+    JPanel createRandomQuizPanel;
+    JPanel createCustomQuizPanel;
 
     /** Initial Buttons and text fields */
     JButton createButton;
@@ -71,15 +69,32 @@ public class ClientGUI extends JComponent implements Runnable {
     JComboBox<String> questionPoolOptions = new JComboBox();
     JButton questionPoolSelect;
 
+    /** Create Random Quiz panel components*/
+    /** Issue with question point values:
+     * Program prints prompt to enter question point values to terminal from Teacher class
+     *  - Should all questions be worth same amount in a random quiz?
+     *  - Move from teacher to ServerThread?
+     * */
+    JLabel numberOfQuestionsLabel = new JLabel("Number of Questions");
+    JComboBox<Integer> numberOfQuestionsOptions = new JComboBox<>();
+    JLabel questionValueLabel = new JLabel("How many points is each question worth?");
+    JTextField questionValueTextField = new JTextField(30);
+    JLabel quizDeadlineLabel = new JLabel("Deadline (YYYY-MM-DD HH:MM)");
+    JTextField quizDeadlineTextField = new JTextField(30);
+    JLabel quizDurationLabel = new JLabel("Duration (minutes)");
+    JTextField quizDurationTextField = new JTextField(30);
+    JButton createRandomQuizButton = new JButton("Create Quiz");
+
+    /** Create Custom Quiz panel components*/
+    JComboBox<String> questionList = new JComboBox<>();
+    JButton createCustomQuizButton = new JButton("Create Quiz");
+    JTextField customQuizQuestionIndexes = new JTextField(30);
+    JTextField customQuizQuestionValues = new JTextField(30);
+
     /** Add question panel components*/
     JLabel addQuestionPrompt = new JLabel("What is the question type?");
     JComboBox<String> addQuestionOptions = new JComboBox();
     JButton addQuestionSelect;
-    
-    /** Delete question panel components*/
-    JLabel deleteQuestionPrompt = new JLabel("Which question would you like to remove?");
-    JComboBox<String> deleteQuestionOptions = new JComboBox();
-    JButton deleteQuestionSelect;
 
     /** Add multiple choice panel components*/
     JLabel addMultipleChoicePrompt = new JLabel("What is the question prompt?");
@@ -225,7 +240,7 @@ public class ClientGUI extends JComponent implements Runnable {
                         loadCreateQuizPanel();
                         break;
                     case 2:
-                         break;
+                        break;
                     case 3:
                         break;
                     case 4:
@@ -252,7 +267,7 @@ public class ClientGUI extends JComponent implements Runnable {
                     default:
                         break;
                 }
-                } else if (e.getSource() == exitButton) {
+            } else if (e.getSource() == exitButton) {
                 writer.println(8);
                 writer.flush();
                 JOptionPane.showMessageDialog(null, "Have a nice day!",
@@ -260,8 +275,8 @@ public class ClientGUI extends JComponent implements Runnable {
                         JOptionPane.INFORMATION_MESSAGE);
                 frame.dispose();
             }
-            }
-        };
+        }
+    };
 
     ActionListener studentListener = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
@@ -350,6 +365,71 @@ public class ClientGUI extends JComponent implements Runnable {
         }
     };
 
+    ActionListener createRandomQuizListener = new ActionListener()
+    {
+        public void actionPerformed(ActionEvent e)
+        {
+            if (e.getSource() == createRandomQuizButton)
+            {
+                writer.println(1);
+                writer.flush();
+                createRandomQuizPanel.setVisible(false);
+                int numQuestions = numberOfQuestionsOptions.getSelectedIndex() + 1;
+                int questionValue = Integer.parseInt(questionValueTextField.getText());
+                writer.println(numQuestions);
+                writer.flush();
+                writer.println(questionValue);
+                writer.flush();
+                writer.println(quizDeadlineTextField.getText());
+                writer.flush();
+                writer.println(quizDurationTextField.getText());
+                writer.flush();
+
+                for (int i = 0; i < numQuestions; i++)
+                {
+                    writer.println(questionValue);
+                    writer.flush();
+                }
+
+                loadTeacherPanel();
+                JOptionPane.showMessageDialog(null, "Quiz Created!\n" +
+                        "Returning to Teacher Main Menu", "Created!", JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+    };
+
+    ActionListener createCustomQuizListener = new ActionListener()
+    {
+        public void actionPerformed(ActionEvent e)
+        {
+            if (e.getSource() == createCustomQuizButton)
+            {
+                writer.println(2);
+                writer.flush();
+                createCustomQuizPanel.setVisible(false);
+                int numQuestions = numberOfQuestionsOptions.getSelectedIndex() + 1;
+                writer.println(numQuestions);
+                writer.flush();
+                String[] questionIndexes = customQuizQuestionIndexes.getText().split(",");
+                for (String questionIndex : questionIndexes)
+                {
+                    writer.println(questionIndex);
+                    writer.flush();
+                }
+                writer.println(quizDeadlineTextField.getText());
+                writer.flush();
+                writer.println(quizDurationTextField.getText());
+                writer.flush();
+                writer.println(customQuizQuestionValues.getText());
+                writer.flush();
+
+                loadTeacherPanel();
+                JOptionPane.showMessageDialog(null, "Quiz Created!\n" +
+                        "Returning to Teacher Main Menu", "Created!", JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+    };
+
     ActionListener questionPoolListener = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == questionPoolSelect) {
@@ -363,12 +443,11 @@ public class ClientGUI extends JComponent implements Runnable {
                         loadAddQuestionPanel();
                         break;
                     case 2:
-                        loadDeleteQuestionPanel();
                         break;
                     case 3:
-                         break;
+                        break;
                     default:
-                         break;
+                        break;
                 }
             }
         }
@@ -385,7 +464,7 @@ public class ClientGUI extends JComponent implements Runnable {
                 switch (questionTypeOption) {
                     case 1:
                         loadAddMultipleChoicePanel();
-                         break;
+                        break;
                     case 2:
                         loadAddFreeResponsePanel();
                         break;
@@ -395,25 +474,6 @@ public class ClientGUI extends JComponent implements Runnable {
                     default:
                         break;
                 }
-            }
-        }
-    };
-    
-    ActionListener deleteQuestionListener = new ActionListener() {
-        public void actionPerformed(ActionEvent ae) {
-            if (ae.getSource() == deleteQuestionSelect) {
-                deleteQuestionPanel.setVisible(false);
-                writer.println(2);
-                writer.flush();
-                int deleteOpts = deleteQuestionOptions.getSelectedIndex() + 1;
-                writer.println(deleteOpts);
-                writer.flush();
-
-                loadTeacherPanel();
-                JOptionPane.showMessageDialog(null, "Question " +
-                                "deleted!",
-                        "Question deleted",
-                        JOptionPane.INFORMATION_MESSAGE);
             }
         }
     };
@@ -470,7 +530,12 @@ public class ClientGUI extends JComponent implements Runnable {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == createQuizTypeSelect) {
                 int quizType = createQuizType.getSelectedIndex() + 1;
+                createQuizPanel.setVisible(false);
 
+                if (quizType == 1)
+                    loadCreateRandomQuizPanel();
+                if (quizType == 2)
+                    loadCreateCustomQuizPanel();
             }
         }
     };
@@ -494,20 +559,20 @@ public class ClientGUI extends JComponent implements Runnable {
 
     ActionListener addTrueFalseListener = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == addTrueFalseSelect) {
-                    addTrueFalsePanel.setVisible(false);
-                    String prompt = trueFalsePromptText.getText();
-                    String answer = trueFalseAnswerChoice.getItemAt(trueFalseAnswerChoice.getSelectedIndex());
-                    writer.println(prompt);
-                    writer.flush();
-                    writer.println(answer);
-                    writer.flush();
-                    loadTeacherPanel();
-                    JOptionPane.showMessageDialog(null, "Question added!\n" +
-                            "Returning to Teacher Main Menu", "Added!", JOptionPane.INFORMATION_MESSAGE);
-                }
+            if (e.getSource() == addTrueFalseSelect) {
+                addTrueFalsePanel.setVisible(false);
+                String prompt = trueFalsePromptText.getText();
+                String answer = trueFalseAnswerChoice.getItemAt(trueFalseAnswerChoice.getSelectedIndex());
+                writer.println(prompt);
+                writer.flush();
+                writer.println(answer);
+                writer.flush();
+                loadTeacherPanel();
+                JOptionPane.showMessageDialog(null, "Question added!\n" +
+                        "Returning to Teacher Main Menu", "Added!", JOptionPane.INFORMATION_MESSAGE);
             }
-        };
+        }
+    };
 
 
 
@@ -636,24 +701,6 @@ public class ClientGUI extends JComponent implements Runnable {
         content.add(addQuestionPanel, BorderLayout.CENTER);
         addQuestionPanel.setVisible(true);
     }
-    
-    public void loadDeleteQuestionPanel() {
-        deleteQuestionPanel = new JPanel();
-
-        ArrayList<String> questions = tools.getQuestionList();
-        for(String question: questions)
-            deleteQuestionOptions.addItem(question);
-
-        deleteQuestionSelect = new JButton("Delete");
-        deleteQuestionSelect.addActionListener(deleteQuestionListener);
-
-        deleteQuestionPanel.add(deleteQuestionPrompt);
-        deleteQuestionPanel.add(deleteQuestionOptions);
-        deleteQuestionPanel.add(deleteQuestionSelect);
-
-        content.add(deleteQuestionPanel, BorderLayout.CENTER);
-        deleteQuestionPanel.setVisible(true);
-    }
 
     public void loadAddMultipleChoicePanel() {
         addMultipleChoicePanel = new JPanel();
@@ -708,14 +755,69 @@ public class ClientGUI extends JComponent implements Runnable {
         createQuizTypeSelect = new JButton("Select");
         createQuizTypeSelect.addActionListener(createQuizListener);
 
-
         createQuizPanel.add(createQuizTypePrompt);
         createQuizPanel.add(createQuizType);
         createQuizPanel.add(createQuizTypeSelect);
 
         content.add(createQuizPanel, BorderLayout.CENTER);
         createQuizPanel.setVisible(true);
+    }
 
+    public void loadCreateRandomQuizPanel()
+    {
+        Tools tools = new Tools();
+        createRandomQuizPanel = new JPanel();
+        createRandomQuizPanel.setLayout(new GridLayout(0, 1));
+        createRandomQuizButton.addActionListener(createRandomQuizListener);
+        createRandomQuizPanel.add(numberOfQuestionsLabel);
+        for (int i = 0; i < tools.getQuestionPoolSize(); i++)
+            numberOfQuestionsOptions.addItem(i + 1);
+        createRandomQuizPanel.add(numberOfQuestionsOptions);
+        createRandomQuizPanel.add(questionValueLabel);
+        createRandomQuizPanel.add(questionValueTextField);
+        createRandomQuizPanel.add(quizDeadlineLabel);
+        createRandomQuizPanel.add(quizDeadlineTextField);
+        createRandomQuizPanel.add(quizDurationLabel);
+        createRandomQuizPanel.add(quizDurationTextField);
+        createRandomQuizPanel.add(createRandomQuizButton);
+
+        content.add(createRandomQuizPanel);
+        createRandomQuizPanel.setVisible(true);
+    }
+
+    public void loadCreateCustomQuizPanel()
+    {
+        Tools tools = new Tools();
+        createCustomQuizPanel = new JPanel();
+        createCustomQuizPanel.setLayout(new GridLayout(0, 1));
+        createCustomQuizButton.addActionListener(createCustomQuizListener);
+        createCustomQuizPanel.add(numberOfQuestionsLabel);
+        for (int i = 0; i < tools.getQuestionPoolSize(); i++)
+            numberOfQuestionsOptions.addItem(i + 1);
+        createCustomQuizPanel.add(numberOfQuestionsOptions);
+        createCustomQuizPanel.add(quizDeadlineLabel);
+        createCustomQuizPanel.add(quizDeadlineTextField);
+        createCustomQuizPanel.add(quizDurationLabel);
+        createCustomQuizPanel.add(quizDurationTextField);
+        ArrayList<String> questions = tools.getQuestionList();
+        int qIndex = 0;
+
+        for (String question : questions)
+        {
+            questionList.addItem(qIndex + ": " + question);
+            qIndex++;
+        }
+
+        createCustomQuizPanel.add(new JLabel("Full list of Questions for reference: "));
+        createCustomQuizPanel.add(questionList);
+        createCustomQuizPanel.add(new JLabel("Enter question indexes 1 by 1, separated by commas"));
+        createCustomQuizPanel.add(customQuizQuestionIndexes);
+        createCustomQuizPanel.add(new JLabel("Enter question point values 1 by 1, separated by commas"));
+        createCustomQuizPanel.add(customQuizQuestionValues);
+        createCustomQuizPanel.add(createCustomQuizButton);
+
+        content.add(createCustomQuizPanel);
+        createCustomQuizPanel.setVisible(true);
 
     }
 
@@ -740,25 +842,25 @@ public class ClientGUI extends JComponent implements Runnable {
     public void loadTrueFalsePanel() {
         addTrueFalsePanel = new JPanel();
 
-            trueFalsePromptText = new JTextField(30);
-            trueFalseAnswerChoice.addItem("T");
-            trueFalseAnswerChoice.addItem("F");
-            addTrueFalseSelect = new JButton("Add");
-            addTrueFalseSelect.addActionListener(addTrueFalseListener);
+        trueFalsePromptText = new JTextField(30);
+        trueFalseAnswerChoice.addItem("T");
+        trueFalseAnswerChoice.addItem("F");
+        addTrueFalseSelect = new JButton("Add");
+        addTrueFalseSelect.addActionListener(addTrueFalseListener);
 
-            addTrueFalsePanel.add(addTrueFalsePrompt);
-            addTrueFalsePanel.add(trueFalsePromptText);
-            addTrueFalsePanel.add(answerTrueFalseOptionsPrompt);
-            addTrueFalsePanel.add(trueFalseAnswerChoice);
-            addTrueFalsePanel.add(addTrueFalseSelect);
+        addTrueFalsePanel.add(addTrueFalsePrompt);
+        addTrueFalsePanel.add(trueFalsePromptText);
+        addTrueFalsePanel.add(answerTrueFalseOptionsPrompt);
+        addTrueFalsePanel.add(trueFalseAnswerChoice);
+        addTrueFalsePanel.add(addTrueFalseSelect);
 
-            content.add(addTrueFalsePanel, BorderLayout.CENTER);
-            addTrueFalsePanel.setVisible(true);
-        }
+        content.add(addTrueFalsePanel, BorderLayout.CENTER);
+        addTrueFalsePanel.setVisible(true);
+    }
 
 
 
-        /** LOAD PANELS */
+    /** LOAD PANELS */
 
     public void run() {
         /** Combo box Items */
