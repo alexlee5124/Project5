@@ -82,7 +82,7 @@ public class Teacher extends Account {
      * @author Alex Lee
      * @version 4/9/2022
      */
-    public void createRandom(int numberQuestions, LocalDateTime deadline, int duration) {
+    public void createRandom(int numberQuestions, LocalDateTime deadline, int duration, int questionValue) {
         // create a random questions array from question pool
         Question[] questionPool = retrieveQuestions();
         if ( questionPool.length < numberQuestions ) {
@@ -93,15 +93,17 @@ public class Teacher extends Account {
             // prompt teacher for the point value of each question and record each question point values
             int totalPoints = 0;
             int[] questionPoints = new int[numberQuestions];
-            for ( int i = 0 ; i < numberQuestions ; i++ ) {
-                System.out.printf("How many points is question %d worth?\n", i + 1);
-                int point = tools.receiveValidInt(1, scan);
-                questionPoints[i] = point;
-                totalPoints = totalPoints + point;
+
+            for ( int i = 0 ; i < numberQuestions ; i++ )
+            {
+//                System.out.printf("How many points is question %d worth?\n", i + 1);
+//                int point = tools.receiveValidInt(1, scan);
+                questionPoints[i] = questionValue;
+                totalPoints += questionValue;
             }
             // create randomized quiz and output it to quiz file
-            Quiz randomQuiz = new Quiz( numberQuestions, deadline,
-                    duration, totalPoints, questionsIndex, questionPoints );
+            Quiz randomQuiz = new Quiz(numberQuestions, deadline,
+                    duration, totalPoints, questionsIndex, questionPoints);
             randomQuiz.writeNewQuiz();
             System.out.println("Random quiz successfully created!");
         }
@@ -109,34 +111,36 @@ public class Teacher extends Account {
 
     /** Create custom quiz based on teach input
      * CS1800 Spring 2022, Project 4
-     * @author Alex Lee
+     * @author Alex Lee, Quinn Bello
      * @version 4/9/2022
      */
-    public void createCustom(int numberQuestions, LocalDateTime deadline, int duration, int[] questionsIndex) {
-        // create a random questions array from question pool
-        Question[] questionPool = retrieveQuestions();
-        for ( int i = 0 ; i < questionsIndex.length ; i++ ) {
+    public void createCustom(int numberQuestions, LocalDateTime deadline, int duration, int[] questionsIndex,
+                             int[] questionPoints)
+    {
+        for ( int i = 0 ; i < questionsIndex.length ; i++ )
             questionsIndex[i]--;
-        }
-        if ( questionPool.length < numberQuestions ) {
-            System.out.println("The desired number of questions is greater than the number of questions" +
-                    "in the question pool! Please update your question pool!");
-        } else {
-            // prompt teacher for the point value of each question and record each question point values
-            int totalPoints = 0;
-            int[] questionPoints = new int[numberQuestions];
-            for ( int i = 0 ; i < numberQuestions ; i++ ) {
-                System.out.printf("How many points is question %d worth?\n", i + 1);
-                int point = tools.receiveValidInt(1, scan);
-                questionPoints[i] = point;
-                totalPoints = totalPoints + point;
-            }
-            // create randomized quiz and output it to quiz file
-            Quiz customQuiz = new Quiz( numberQuestions, deadline, duration,
-                    totalPoints, questionsIndex, questionPoints );
-            customQuiz.writeNewQuiz();
-            System.out.println("Custom quiz successfully created!");
-        }
+//        if ( questionPool.length < numberQuestions ) {
+//            System.out.println("The desired number of questions is greater than the number of questions" +
+//                    "in the question pool! Please update your question pool!");
+//        } else
+//        {
+//            // prompt teacher for the point value of each question and record each question point values
+//            int totalPoints = 0;
+////            int[] questionPoints = new int[numberQuestions];
+////            for ( int i = 0 ; i < numberQuestions ; i++ ) {
+////                System.out.printf("How many points is question %d worth?\n", i + 1);
+////                int point = tools.receiveValidInt(1, scan);
+////                questionPoints[i] = point;
+////                totalPoints = totalPoints + point;
+//        }
+        int totalPoints = 0;
+
+        for (int questionValue : questionPoints)
+            totalPoints += questionValue;
+
+        // create custom quiz and output it to quiz file
+        Quiz customQuiz = new Quiz(numberQuestions, deadline, duration, totalPoints, questionsIndex, questionPoints);
+        customQuiz.writeNewQuiz();
     }
 
     /** Delete desired quiz
