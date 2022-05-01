@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,30 +33,6 @@ public class Tools {
             entireFile += textFileLines.get(i);
         }
         return entireFile;
-    }
-
-    /** Get a list of all questions in the question document
-     * CS1800 Spring 2022, Project 4
-     * @author Quinn Bell0
-     * @version 4/30/2022
-     */
-    public ArrayList<String> getQuestionList()
-    {
-        ArrayList<String> questionList = new ArrayList<String>();
-
-        try (BufferedReader bfr = new BufferedReader(new FileReader("Questions.txt")))
-        {
-            String line;
-
-            while ((line = bfr.readLine()) != null)
-                questionList.add(line);
-
-        } catch (IOException ie)
-        {
-            System.out.println("Either the file doesn't exist or the file is in the wrong format!");
-        }
-
-        return questionList;
     }
 
     /** Take maximum number of values and a size and return an integer array of random values of size and
@@ -186,4 +164,81 @@ public class Tools {
         String[] lines = questionFile.split("/");
         return lines.length;
     }
+
+    /** Retrieve quizzes from text file and save it as an array
+     * CS1800 Spring 2022, Project 4
+     * @author Alex Lee
+     * @version 4/10/2022
+     */
+    public Quiz[] retrieveQuizzes() {
+        String quizFile = loadTextFile("Quiz.txt");
+        String[] lines = quizFile.split("/");
+        Quiz[] quizzes = new Quiz[lines.length];
+        for ( int i = 0 ; i < lines.length ; i++ ) {
+            String[] elements = lines[i].split(":");
+            int quizID = Integer.parseInt((elements[0]));
+            int numberQuestions = Integer.parseInt(elements[1]);
+            int[] questionPoints = new int[numberQuestions];
+            for ( int j = 0 ; j < numberQuestions ; j++ ) {
+                questionPoints[j] = Integer.parseInt((elements[2]).split(",")[j]);
+            }
+            String deadlineString = (elements[3]);
+            deadlineString = String.format("%s-%s-%s %s:%s", deadlineString.split("-")[0],
+                    deadlineString.split("-")[1], deadlineString.split("-")[2],
+                    deadlineString.split("-")[3], deadlineString.split("-")[4]);
+            DateTimeFormatter deadlineFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            LocalDateTime deadline = LocalDateTime.parse( deadlineString, deadlineFormat );
+            int duration = Integer.parseInt(elements[4]);
+            int totalPoints = Integer.parseInt(elements[5]);
+            int[] questionsIndex = new int[numberQuestions];
+            for ( int j = 0 ; j < numberQuestions ; j++ ) {
+                questionsIndex[j] = Integer.parseInt(elements[6].split(",")[j]);
+            }
+            Quiz quiz = new Quiz(quizID, numberQuestions, deadline,
+                    duration, totalPoints, questionsIndex, questionPoints);
+            quizzes[i] = quiz;
+        }
+        return quizzes;
+    }
+
+    /** Retrieve quizzes from text file and save it as an array
+     * CS1800 Spring 2022, Project 4
+     * @author Alex Lee
+     * @version 4/10/2022
+     */
+
+    public int[] retrieveQuizIDs() {
+        Quiz[] quizzes = retrieveQuizzes();
+        int[] quizIDs = new int[quizzes.length];
+        for (int i = 0 ; i < quizIDs.length; i++) {
+            quizIDs[i] = quizzes[i].getQuizID();
+        }
+        return quizIDs;
+    }
+
+    /** Get a list of all questions in the question document
+     * CS1800 Spring 2022, Project 4
+     * @author Quinn Bell0
+     * @version 4/30/2022
+     */
+    public ArrayList<String> getQuestionList()
+    {
+        ArrayList<String> questionList = new ArrayList<String>();
+
+        try (BufferedReader bfr = new BufferedReader(new FileReader("Questions.txt")))
+        {
+            String line;
+
+            while ((line = bfr.readLine()) != null)
+                questionList.add(line.split("/")[0]);
+
+        } catch (IOException ie)
+        {
+            System.out.println("Either the file doesn't exist or the file is in the wrong format!");
+        }
+
+        return questionList;
+    }
+
+
 }
