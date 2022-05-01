@@ -65,6 +65,10 @@ public class Quiz {
         return this.duration;
     }
 
+    public int getTotalPoints() {
+        return this.totalPoints;
+    }
+
     public void setDuration(int duration) {
         this.duration = duration;
     }
@@ -78,7 +82,10 @@ public class Quiz {
     }
 
     public String getDeadline() {
-        return this.deadline.toString();
+        return String.format("%d-%d-%d %d:%d",
+                this.deadline.getYear(), this.deadline.getMonthValue(),
+                this.deadline.getDayOfMonth(), this.deadline.getHour(),
+                this.deadline.getMinute());
     }
 
     public void setDeadline(LocalDateTime deadline) {
