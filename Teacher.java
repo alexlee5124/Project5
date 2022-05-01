@@ -426,4 +426,23 @@ public class Teacher extends Account {
             System.out.println("ERROR RECORDING QUIZ");
         }
     }
+
+    /** Receive question prompt and answer from the user and append it to the questions text file
+     * CS1800 Spring 2022, Project 4
+     * @author Alex Lee
+     * @version 4/9/2022
+     */
+    public void addTrueFalseQuestion(String prompt, String answer) {
+        Question question = new Question(prompt, answer, "TF");
+        try {
+            PrintWriter out = new PrintWriter(new FileOutputStream("Questions.txt", true));
+            out.println(question);
+            out.close();
+            System.out.println("Question added!");
+        } catch (Exception e) {
+            System.out.println("ERROR RECORDING NEW QUESTION");
+        }
+
+    }
+
 }
