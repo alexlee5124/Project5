@@ -33,16 +33,25 @@ public class Question {
     }
 
     public String getPrompt() {
+        String prompt = "";
         if (this.questionType.equals("R")) {
-            return this.prompt;
-        } else {
+            prompt = this.prompt;
+        } else if (this.questionType.equals("M")){
             String[] promptElements = this.prompt.split(":");
-            String prompt = promptElements[0];
-            for (int i = 1 ; i < promptElements.length ; i++) {
-                prompt += String.format("\n%d. %s", i, promptElements[i]);
-            }
-            return prompt;
+            prompt = promptElements[0];
+        } else if (this.questionType.equals("TF")) {
+            prompt = this.prompt + " (T/F)";
         }
+        return prompt;
+    }
+
+    public String[] getMultipleOptions() {
+        String[] promptElements = this.prompt.split(":");
+        String[] multipleOptions = new String[promptElements.length - 1];
+        for (int i = 1 ; i < promptElements.length ; i++) {
+            multipleOptions[i - 1] = promptElements[i];
+        }
+        return multipleOptions;
     }
 
     public String getAnswer() {
@@ -51,6 +60,10 @@ public class Question {
 
     public int getPointValue() {
         return this.pointValue;
+    }
+
+    public String getType() {
+        return this.questionType;
     }
 
     public void setPrompt( String prompt ) {
