@@ -157,26 +157,31 @@ public class ServerThread implements Runnable
                             int duration = 0;
                             switch (randomQuiz) {
                                 case 1:
-                                    try {
-                                        numberQuestions = Integer.parseInt(reader.readLine());
-                                        questionValue = Integer.parseInt(reader.readLine());
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
+                                    System.out.println("TEST POINT 7");
                                     do {
                                         flagError = false;
                                         String deadlineString = null;
+                                        String durationString = null;
+                                        String numberQuestionsString = null;
+                                        String questionValueString = null;
                                         try {
+                                            numberQuestionsString = reader.readLine();
+                                            questionValueString = reader.readLine();
                                             deadlineString = reader.readLine();
+                                            durationString = reader.readLine();
+                                            System.out.println(numberQuestionsString + questionValueString + deadlineString + durationString);
                                         } catch (IOException e) {
                                             e.printStackTrace();
                                         }
                                         try {
+                                            numberQuestions = Integer.parseInt(numberQuestionsString);
+                                            questionValue = Integer.parseInt(questionValueString);
                                             DateTimeFormatter deadlineFormat =
                                                     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
                                             deadline = LocalDateTime.parse(deadlineString, deadlineFormat);
+                                            duration = Integer.parseInt(durationString);
                                         } catch (Exception e) {
-                                            System.out.println("Invalid deadline response.");
+                                            System.out.println("Invalid response.");
                                             System.out.println("Prompting client again.");
                                             flagError = true;
                                             writer.println("T");
@@ -186,46 +191,49 @@ public class ServerThread implements Runnable
                                     writer.println("F");
                                     writer.flush();
 
-                                    try {
-                                        duration = Integer.parseInt(reader.readLine());
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
                                     teacher.createRandom(numberQuestions, deadline, duration, questionValue);
-                                    writer.println("Success");
-                                    writer.flush();
                                     break;
                                 case 2:
-                                    try {
-                                        numberQuestions = Integer.parseInt(reader.readLine());
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                    int[] questionIndex = new int[numberQuestions];
-                                    for (int i = 0; i < numberQuestions; i++) {
-                                        int index = 0;
-                                        try {
-                                            index = Integer.parseInt(reader.readLine());
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        }
-                                        questionIndex[i] = index;
-                                    }
-
+                                    int[] questionIndexes = new int[0];
+                                    int[] questionValues = new int[0];
                                     do {
                                         flagError = false;
+                                        System.out.println("TEST POINT 8");
+                                        String questionIndexString = null;
                                         String deadlineString = null;
+                                        String durationString = null;
+                                        String customQuizQuestionValuesString = null;
                                         try {
+                                            numberQuestions = Integer.parseInt(reader.readLine());
+                                            questionIndexString = reader.readLine();
                                             deadlineString = reader.readLine();
+                                            durationString = reader.readLine();
+                                            customQuizQuestionValuesString = reader.readLine();
+                                            System.out.println(numberQuestions + questionIndexString +deadlineString+
+                                                    durationString + customQuizQuestionValuesString);
                                         } catch (IOException e) {
                                             e.printStackTrace();
                                         }
+
+                                        String[] questionIndexesString;
+                                        String[] questionValuesString;
                                         try {
+                                            questionIndexesString = questionIndexString.split(",");
+                                            questionValuesString = customQuizQuestionValuesString.split(",");
+                                            questionIndexes = new int[questionIndexesString.length];
+                                            questionValues = new int[questionIndexesString.length];
+                                            for (int i = 0; i < questionIndexesString.length; i++) {
+                                                questionIndexes[i] = Integer.parseInt(questionIndexesString[i]);
+                                                questionValues[i] = Integer.parseInt(questionValuesString[i]);
+                                            }
                                             DateTimeFormatter deadlineFormat =
                                                     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
                                             deadline = LocalDateTime.parse(deadlineString, deadlineFormat);
+                                            duration = Integer.parseInt(durationString);
+                                            teacher.createCustom(numberQuestions, deadline, duration,
+                                                    questionIndexes, questionValues);
                                         } catch (Exception e) {
-                                            System.out.println("Invalid deadline response.");
+                                            System.out.println("Invalid response.");
                                             System.out.println("Prompting client again.");
                                             flagError = true;
                                             writer.println("T");
@@ -233,30 +241,6 @@ public class ServerThread implements Runnable
                                         }
                                     } while (flagError);
                                     writer.println("F");
-                                    writer.flush();
-
-                                    try {
-                                        duration = Integer.parseInt(reader.readLine());
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    int[] questionVals = new int[numberQuestions];
-                                    String[] qValsFromUser = new String[0];
-
-                                    try
-                                    {
-                                        qValsFromUser = reader.readLine().split(",");
-                                    } catch (IOException e)
-                                    {
-                                        e.printStackTrace();
-                                    }
-
-                                    for (int i = 0; i < qValsFromUser.length; i++)
-                                        questionVals[i] = Integer.parseInt(qValsFromUser[i]);
-
-                                    teacher.createCustom(numberQuestions, deadline, duration, questionIndex, questionVals);
-                                    writer.println("Success");
                                     writer.flush();
                                     break;
                                 default:
@@ -482,7 +466,7 @@ public class ServerThread implements Runnable
                                             } catch (IOException e) {
                                                 e.printStackTrace();
                                             }
-                                            teacher.addResponseQuestion(prompt, answer);
+                                            teacher.addTrueFalseQuestion(prompt, answer);
                                             writer.println("Success");
                                             writer.flush();
                                             break;
@@ -498,8 +482,6 @@ public class ServerThread implements Runnable
                                         e.printStackTrace();
                                     }
                                     teacher.deleteQuestion(questionNumber);
-                                    writer.println("Success");
-                                    writer.flush();
                                     break;
                                 case 3:
                                     break;
