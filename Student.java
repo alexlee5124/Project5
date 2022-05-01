@@ -83,12 +83,15 @@ public class Student extends Account {
                 quiz = quizzes[i];
             }
         }
+        /**
         if ( quiz == null ) {
             System.out.println("The quiz doesn't exist!");
         } else {
             System.out.printf("Quiz %d:\n", wantedID);
         }
+         */
         return quiz;
+
     }
 
     /** Load the current grades from grade file and return it in the format "grade,timestamp(YYYY-MM-DD HH:SS)"
@@ -212,11 +215,13 @@ public class Student extends Account {
         String gradeFile = tools.loadTextFile("Grades.txt");
         String[] lines = gradeFile.split("/");
         System.out.printf("TEST LINES LENGTH: %d\n", lines.length);
-        if (lines.length > 1) {
+        if (lines.length >= 1) {
+            System.out.println("TEST POINT 4");
             String[] usernames = new String[lines.length];
             int lineIndex = 0;
             for (int i = 0 ; i < usernames.length ; i++) {
-                usernames[i] = lines[i].split("-")[1];
+                usernames[i] = lines[i].split("-")[0];
+                System.out.println(usernames[i]);
             }
             for (int i = 0 ; i < usernames.length ; i++) {
                 if (this.getUsername().equals(usernames[i])) {
@@ -226,12 +231,16 @@ public class Student extends Account {
                 }
             }
             if (userExists) {
+                System.out.println("TEST POINT 3");
                 String[] quizzes = (lines[lineIndex].split("-"))[1].split(",");
                 String[] takenIDs = new String[quizzes.length];
-                for ( int i= 0 ; i < quizzes.length ; i++) {
+                for ( int i = 1 ; i < quizzes.length ; i++) {
                     takenIDs[i] = quizzes[i].split(":")[0];
+                    System.out.println(takenIDs[i]);
                 }
-                for (int i = 0 ; i < takenIDs.length ; i++) {
+                System.out.printf("LENGTH %d", takenIDs.length);
+                for (int i = 1 ; i < takenIDs.length ; i++) {
+                    System.out.println(takenIDs.toString());
                     if (wantedID == Integer.parseInt(takenIDs[i])) {
                         hasTaken = true;
                     }
