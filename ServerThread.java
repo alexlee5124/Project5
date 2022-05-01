@@ -542,9 +542,28 @@ public class ServerThread implements Runnable
                     System.out.printf("TEST OPTION : %d", option);
                     switch (option) {
                         case 1:
+                            int quizID = 0;
+                            Quiz quiz;
+                            try {
+                                quizID = Integer.parseInt(reader.readLine());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            quiz = student.loadQuiz(quizID);
+                            String[] responses = new String[quiz.getNumberQuestions()];
+                            for (int i = 0 ; i < responses.length ; i++) {
+                                try {
+                                    responses[i] = reader.readLine();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            float grade = quiz.gradeQuiz(responses);
+                            LocalDateTime timestamp = LocalDateTime.now();
+                            student.recordGrade(grade, quizID, timestamp);
                             break;
                         case 2:
-                            int quizID = 0;
+                            quizID = 0;
                             try {
                                 quizID = Integer.parseInt(reader.readLine());
                             } catch (IOException e) {
