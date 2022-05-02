@@ -445,4 +445,19 @@ public class Teacher extends Account {
 
     }
 
+    /** load student's usernames from grades file
+     * CS1800 Spring 2022, Project 4
+     * @author Alex Lee
+     * @version 4/11/2022
+     */
+    public String[] loadStudentSubmissionsUsername() {
+        String gradesFile = tools.loadTextFile("Grades.txt");
+        String[] studentsGrades = gradesFile.split("/");
+        String[] usernames = new String[studentsGrades.length];
+        for (int i = 0 ; i < usernames.length ; i++) {
+            usernames[i] = studentsGrades[i].split("-")[0];
+        }
+        return usernames;
+    }
+
 }
