@@ -15,7 +15,23 @@ Implemented Classes:
 
 **Client.java**
 
+Client.java establishes a connection between the user and the server. Here, user input is flushed to the server.
+
+**ClientGUI.java**
+
+ClientGUI.java is our main interface to interact with the client. Here the user creates their input to send back to the server via text input, button actionListeners, and JCombo dropdowns.
+
+**ServerMain.java**
+
+ServerMain.java establishes a connection with clients and processes their input by rerouting their data to the ServerThread class as a newClient.
+
 **ServerThread.java**
+
+ServerThread.java receives input from clients and processes the data.
+
+**Tools.java**
+
+Tools.java is made up of several useful functions that were used in ClientGUI.java and other classes. They were used multiple times throughout our program, so they were compiled and stored within the Tools.java class to improve readability and reliablity.
 
 **Account.java:**
 
