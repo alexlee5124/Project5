@@ -47,6 +47,8 @@ public class ClientGUI extends JComponent implements Runnable {
     JPanel deleteQuestionPanel; //16
     JPanel createRandomQuizPanel; //17
     JPanel createCustomQuizPanel; //18
+    JPanel viewSubmissionPanel; //19
+    JPanel viewStudentSubmissionPanel; //20
 
     /** reload button */
     JButton reloadButton;
@@ -162,6 +164,20 @@ public class ClientGUI extends JComponent implements Runnable {
     Question[] quizQuestions;
     int quizResponseCounter = 0;
     Object[] quizResponses =  new Object[40];
+
+    /** View submission panel components*/
+    JTextField submissionQuizIDInput;
+    JButton viewSubmissionSelect;
+    JLabel viewSubmissionPrompt = new JLabel("Which quiz ID would you like to view?");
+
+    /** View student submission panel components*/
+    JLabel studentSubmissionPrompt = new JLabel("Which student's submission would you like to view?");
+    JComboBox<String> studentSubmissionOptions;
+    JLabel studentSubmissionQuizPrompt =
+            new JLabel("Which quiz would you like to view?");
+    JButton studentSubmissionSelect;
+    JTextField studentSubmissionQuizInput;
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new ClientGUI());
@@ -295,10 +311,11 @@ public class ClientGUI extends JComponent implements Runnable {
                         loadCreateQuizPanel();
                         break;
                     case 2:
-                         break;
+                        break;
                     case 3:
                         break;
                     case 4:
+                        loadViewStudentSubmissionPanel();
                         break;
                     case 5:
                         loadQuestionPoolPanel();
@@ -345,6 +362,7 @@ public class ClientGUI extends JComponent implements Runnable {
                         loadTakeQuizPanel();
                         break;
                     case 2:
+                        loadViewSubmissionPanel();
                         break;
                     case 3:
                         loadModifyPanel("S");
@@ -733,15 +751,97 @@ public class ClientGUI extends JComponent implements Runnable {
                     writer.flush();
                 }
                 quizTakingFrame.dispose();
+                loadStudentPanel();
                 JOptionPane.showMessageDialog(null, "Quiz submitted!"
                         , "Quiz submitted", JOptionPane.INFORMATION_MESSAGE);
-
             }
         }
     };
 
+    ActionListener viewSubmissionListener = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == viewSubmissionSelect) {
+                viewSubmissionPanel.setVisible(false);
+                String quizIDString = submissionQuizIDInput.getText();
+                int quizID;
+                loadStudentPanel();
+                boolean flag = false;
+                try {
+                    quizID = Integer.parseInt(quizIDString);
+                    writer.println(quizID);
+                    writer.flush();
+                } catch  (Exception exc) {
+                    writer.println("0");
+                    writer.flush();
+                    loadStudentPanel();
+                    JOptionPane.showMessageDialog(null, "This quiz ID doesn't exist" +
+                                    "or you didn't enter a valid ID!", "ERROR", JOptionPane.ERROR_MESSAGE);
+                    flag = true;
+                }
+                String grade = null;
+                try {
+                    grade = reader.readLine();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                System.out.println(grade);
+                if (grade.equals("null") && !flag) {
+                    JOptionPane.showMessageDialog(null, "You haven't taken this quiz yet."
+                            , "Grade", JOptionPane.
+                                    INFORMATION_MESSAGE);
+                } else if (!grade.equals("null")){
+                    JOptionPane.showMessageDialog(null, grade + "%"
+                            , "Grade", JOptionPane.
+                                    INFORMATION_MESSAGE);
+                }
+            }
+        }
+    };
 
+    ActionListener studentSubmissionListener = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == studentSubmissionSelect) {
+                viewStudentSubmissionPanel.setVisible(false);
+                loadTeacherPanel();
+                String username = (String) studentSubmissionOptions.getSelectedItem();
+                String quizIDString = studentSubmissionQuizInput.getText();
+                try {
+                    int quizID = Integer.parseInt(quizIDString);
+                    writer.println(username);
+                    writer.flush();
+                    writer.println(quizID);
+                    writer.flush();
 
+                    String grade = reader.readLine();
+                    String timestamp = reader.readLine();
+
+                    if (grade.equals("Failure")) {
+                        JOptionPane.showMessageDialog(null,
+                                "The student didn't take this quiz",
+                                "Message", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(null,
+                                "Submitted: " + timestamp + "  Grade: " + grade,
+                                "Grade", JOptionPane.INFORMATION_MESSAGE);
+                    }
+
+                } catch (Exception ex) {
+                    writer.println("null");
+                    writer.flush();
+                    writer.println(0);
+                    writer.flush();
+                    JOptionPane.showMessageDialog(null, "This quiz ID doesn't exist" +
+                            "or you didn't enter a valid ID!", "ERROR", JOptionPane.ERROR_MESSAGE);
+                    try {
+                        reader.readLine();
+                        reader.readLine();
+                    } catch (IOException exc) {
+                        exc.printStackTrace();
+                    }
+                }
+            }
+        }
+    };
 
     /** ACTION LISTENERS */
 
@@ -749,30 +849,6 @@ public class ClientGUI extends JComponent implements Runnable {
     public void reload() {
         System.out.println(currentPage);
         switch (currentPage) {
-            case 1:
-                loadInitialPanel();
-                break;
-            case 2:
-                loadCreateAccountPanel();
-                break;
-            case 3:
-                loadLogInPanel();
-                break;
-            case 4:
-                loadStudentPanel();
-                break;
-            case 5:
-                loadTeacherPanel();
-                break;
-            case 6:
-                loadModifyPanel(currentAccountType);
-                break;
-            case 7:
-                loadQuestionPoolPanel();
-                break;
-            case 8:
-                loadAddQuestionPanel();
-                break;
             case 9:
                 loadAddMultipleChoicePanel();
                 break;
@@ -1220,83 +1296,121 @@ public class ClientGUI extends JComponent implements Runnable {
     }
 
 
-        public void loadQuizTakingFrame(int quizID) {
-            /** create JFrame and title */
-            quizTakingFrame = new JFrame();
-            quizTakingFrame.setTitle("QUIZ");
-            quizTakingFrame.setSize(1000, 1000);
-            quizTakingFrame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-            quizTakingFrame.setLocationRelativeTo(null);
+    public void loadQuizTakingFrame(int quizID) {
+        /** create JFrame and title */
+        quizTakingFrame = new JFrame();
+        quizTakingFrame.setTitle("QUIZ");
+        quizTakingFrame.setSize(1000, 1000);
+        quizTakingFrame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+        quizTakingFrame.setLocationRelativeTo(null);
 
-            /** Create frame and set it visible*/
-            quizContent = quizTakingFrame.getContentPane();
-            quizContent.setLayout(new BorderLayout());
+        /** Create frame and set it visible*/
+        quizContent = quizTakingFrame.getContentPane();
+        quizContent.setLayout(new BorderLayout());
 
-            quizTakingFrame.setVisible(true);
-            quizTakingPanel = new JPanel();
-            quizTakingPanel.setLayout(new GridLayout(30, 2));
+        quizTakingFrame.setVisible(true);
+        quizTakingPanel = new JPanel();
+        quizTakingPanel.setLayout(new GridLayout(30, 2));
 
-            currentQuiz = student.loadQuiz(quizID);
-            quizQuestions = currentQuiz.loadQuizQuestions();
+        currentQuiz = student.loadQuiz(quizID);
+        quizQuestions = currentQuiz.loadQuizQuestions();
 
-            /** Quiz Info Panel */
-            JPanel quizInfoPanel = new JPanel();
-            quizInfoPanel.setLayout(new GridLayout(5, 1));
-            JLabel quizIDInfo = new JLabel("Quiz number: " + currentQuiz.getQuizID());
-            JLabel numberQuestionsInfo = new JLabel("Number of questions: " +
-                    currentQuiz.getNumberQuestions());
-            JLabel deadlineInfo = new JLabel("Quiz deadline: " +
-                    currentQuiz.getDeadline());
-            JLabel durationInfo = new JLabel("Quiz duration: " +
-                    currentQuiz.getDuration());
-            JLabel totalPointsInfo = new JLabel("Quiz total points: " +
-                    currentQuiz.getTotalPoints());
-            quizInfoPanel.add(quizIDInfo);
-            quizInfoPanel.add(numberQuestionsInfo);
-            quizInfoPanel.add(deadlineInfo);
-            quizInfoPanel.add(durationInfo);
-            quizInfoPanel.add(totalPointsInfo);
+        /** Quiz Info Panel */
+        JPanel quizInfoPanel = new JPanel();
+        quizInfoPanel.setLayout(new GridLayout(5, 1));
+        JLabel quizIDInfo = new JLabel("Quiz number: " + currentQuiz.getQuizID());
+        JLabel numberQuestionsInfo = new JLabel("Number of questions: " +
+                currentQuiz.getNumberQuestions());
+        JLabel deadlineInfo = new JLabel("Quiz deadline: " +
+                currentQuiz.getDeadline());
+        JLabel durationInfo = new JLabel("Quiz duration: " +
+                currentQuiz.getDuration());
+        JLabel totalPointsInfo = new JLabel("Quiz total points: " +
+                currentQuiz.getTotalPoints());
+        quizInfoPanel.add(quizIDInfo);
+        quizInfoPanel.add(numberQuestionsInfo);
+        quizInfoPanel.add(deadlineInfo);
+        quizInfoPanel.add(durationInfo);
+        quizInfoPanel.add(totalPointsInfo);
 
-            quizContent.add(quizInfoPanel, BorderLayout.NORTH);
-            quizInfoPanel.setVisible(true);
+        quizContent.add(quizInfoPanel, BorderLayout.NORTH);
+        quizInfoPanel.setVisible(true);
 
-            /** Quiz Questions Panel */
-            JPanel quizTakingQuestionsPanel = new JPanel();
-            quizTakingQuestionsPanel.setLayout(new GridLayout(20, 2));
-            for (int i = 0 ; i < quizQuestions.length ; i++) {
-                JLabel questionPrompt = new JLabel(quizQuestions[i].getPrompt());
-                quizTakingQuestionsPanel.add(questionPrompt);
-                if (quizQuestions[i].getType().equals("R")) {
-                    JTextField response = new JTextField(30);
-                    quizResponses[quizResponseCounter] = response;
-                    quizResponseCounter++;
-                    quizTakingQuestionsPanel.add(response);
-                } else if (quizQuestions[i].getType().equals("TF")) {
-                    JComboBox<String> response = new JComboBox<>();
-                    response.addItem("True");
-                    response.addItem("False");
-                    quizResponses[quizResponseCounter] = response;
-                    quizResponseCounter++;
-                    quizTakingQuestionsPanel.add(response);
-                } else if (quizQuestions[i].getType().equals("M")) {
-                    String[] options = quizQuestions[i].getMultipleOptions();
-                    JComboBox<String> response = new JComboBox<>();
-                    for (int j = 0 ; j < options.length ; j++) {
-                        response.addItem(options[j]);
-                    }
-                    quizResponses[quizResponseCounter] = response;
-                    quizResponseCounter++;
-                    quizTakingQuestionsPanel.add(response);
+        /** Quiz Questions Panel */
+        JPanel quizTakingQuestionsPanel = new JPanel();
+        quizTakingQuestionsPanel.setLayout(new GridLayout(20, 2));
+        for (int i = 0 ; i < quizQuestions.length ; i++) {
+            JLabel questionPrompt = new JLabel(quizQuestions[i].getPrompt());
+            quizTakingQuestionsPanel.add(questionPrompt);
+            if (quizQuestions[i].getType().equals("R")) {
+                JTextField response = new JTextField(30);
+                quizResponses[quizResponseCounter] = response;
+                quizResponseCounter++;
+                quizTakingQuestionsPanel.add(response);
+            } else if (quizQuestions[i].getType().equals("TF")) {
+                JComboBox<String> response = new JComboBox<>();
+                response.addItem("True");
+                response.addItem("False");
+                quizResponses[quizResponseCounter] = response;
+                quizResponseCounter++;
+                quizTakingQuestionsPanel.add(response);
+            } else if (quizQuestions[i].getType().equals("M")) {
+                String[] options = quizQuestions[i].getMultipleOptions();
+                JComboBox<String> response = new JComboBox<>();
+                for (int j = 0 ; j < options.length ; j++) {
+                    response.addItem(options[j]);
                 }
+                quizResponses[quizResponseCounter] = response;
+                quizResponseCounter++;
+                quizTakingQuestionsPanel.add(response);
             }
-            quizResponseCounter = 0;
-            submitButton = new JButton("Submit quiz");
-            quizTakingQuestionsPanel.add(submitButton);
-            submitButton.addActionListener(quizTakingListener);
-            quizContent.add(quizTakingQuestionsPanel, BorderLayout.SOUTH);
-            quizTakingQuestionsPanel.setVisible(true);
-
         }
+        quizResponseCounter = 0;
+        submitButton = new JButton("Submit quiz");
+        quizTakingQuestionsPanel.add(submitButton);
+        submitButton.addActionListener(quizTakingListener);
+        quizContent.add(quizTakingQuestionsPanel, BorderLayout.SOUTH);
+        quizTakingQuestionsPanel.setVisible(true);
+
+    }
+
+    public void loadViewSubmissionPanel() {
+        viewSubmissionPanel = new JPanel();
+
+        submissionQuizIDInput = new JTextField(5);
+        viewSubmissionSelect = new JButton("Select");
+        viewSubmissionSelect.addActionListener(viewSubmissionListener);
+
+        viewSubmissionPanel.add(viewSubmissionPrompt);
+        viewSubmissionPanel.add(submissionQuizIDInput);
+        viewSubmissionPanel.add(viewSubmissionSelect);
+
+        content.add(viewSubmissionPanel, BorderLayout.CENTER);
+        viewSubmissionPanel.setVisible(true);
+
+    }
+
+    public void loadViewStudentSubmissionPanel(){
+        viewStudentSubmissionPanel = new JPanel();
+
+        studentSubmissionSelect = new JButton("Select");
+        studentSubmissionSelect.addActionListener(studentSubmissionListener);
+        String[] studentUsernames = teacher.loadStudentSubmissionsUsername();
+        studentSubmissionOptions = new JComboBox<String>();
+        for (int i = 0 ; i < studentUsernames.length ; i++) {
+            studentSubmissionOptions.addItem(studentUsernames[i]);
+        }
+        studentSubmissionQuizInput = new JTextField(5);
+
+        viewStudentSubmissionPanel.add(studentSubmissionPrompt);
+        viewStudentSubmissionPanel.add(studentSubmissionOptions);
+        viewStudentSubmissionPanel.add(studentSubmissionQuizPrompt);
+        viewStudentSubmissionPanel.add(studentSubmissionQuizInput);
+        viewStudentSubmissionPanel.add(studentSubmissionSelect);
+
+        content.add(viewStudentSubmissionPanel, BorderLayout.CENTER);
+        viewStudentSubmissionPanel.setVisible(true);
+    }
         /** LOAD PANELS */
 
     public void run() {
@@ -1311,9 +1425,6 @@ public class ClientGUI extends JComponent implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
 
 
         /** create JFrame and title */
