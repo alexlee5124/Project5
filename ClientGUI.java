@@ -313,9 +313,9 @@ public class ClientGUI extends JComponent implements Runnable {
                         loadCreateQuizPanel();
                         break;
                     case 2:
+                        loadDeleteQuizPanel();
                         break;
                     case 3:
-                        loadDeleteQuizPanel();
                         break;
                     case 4:
                         loadViewStudentSubmissionPanel();
@@ -1004,8 +1004,8 @@ public class ClientGUI extends JComponent implements Runnable {
 
         teacherMenuOptions = new JComboBox();
         teacherMenuOptions.addItem("Create quiz");
-        teacherMenuOptions.addItem("Modify quiz");
         teacherMenuOptions.addItem("Delete quiz");
+        teacherMenuOptions.addItem("Modify quiz");
         teacherMenuOptions.addItem("View student submissions");
         teacherMenuOptions.addItem("Edit question pool");
         teacherMenuOptions.addItem("Modify account");
@@ -1455,7 +1455,7 @@ public class ClientGUI extends JComponent implements Runnable {
         ArrayList<String> quizList = tools.getQuizList();
 
         for (String quiz : quizList)
-            quizSelectionBox.addItem(quiz);
+            quizSelectionBox.addItem(quiz.split(":")[0]);
 
         quizDeleteSelect = new JButton("Select");
         deleteQuizPanel.add(new JLabel("Select a quiz to delete"));
