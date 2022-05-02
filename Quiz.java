@@ -208,8 +208,14 @@ public class Quiz {
             questionsIndexString = questionsIndexString + this.questionsIndex[i] + ",";
         }
         questionsIndexString = questionsIndexString + this.questionsIndex[this.numberQuestions - 1];
-        String deadlineString = String.format("%d-%s-%s-%d-%d", this.deadline.getYear(),monthString,
-                dayString, this.deadline.getHour(), this.deadline.getMinute());
+        String hourString = "";
+        if (this.deadline.getHour() <10) {
+            hourString = "0" + this.deadline.getHour();
+        } else {
+            hourString = String.valueOf(this.deadline.getHour());
+        }
+        String deadlineString = String.format("%d-%s-%s-%s-%d", this.deadline.getYear(),monthString,
+                dayString, hourString, this.deadline.getMinute());
         String questionPointsString = "";
         for ( int i = 0 ; i < this.numberQuestions - 1 ; i++ ) {
             questionPointsString = questionPointsString +  this.questionPoints[i] + "," ;
