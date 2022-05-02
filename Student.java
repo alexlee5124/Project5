@@ -145,13 +145,15 @@ public class Student extends Account {
      * @author Alex Lee
      * @version 4/9/2022
      */
-    public void recordGrade(float grade, int wantedID, LocalDateTime timestamp) {
+    public boolean recordGrade(float grade, int wantedID, LocalDateTime timestamp) {
+        boolean takenBefore = false;
         String gradeFile = tools.loadTextFile("Grades.txt");
         String[] lines = gradeFile.split("/");
         boolean hasTaken = hasTaken(wantedID);
         boolean exists = false;
         if (hasTaken) {
             System.out.println("ERROR: You have already taken this quiz before!");
+            takenBefore = true;
         } else {
             String[] usernames = new String[lines.length];
             int lineIndex = 0;
@@ -202,6 +204,7 @@ public class Student extends Account {
                 }
             }
         }
+        return takenBefore;
     }
 
     /** Checks to see if the student has taken the quiz before
