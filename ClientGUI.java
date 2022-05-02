@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Arrays;
-import java.util.Collections;
 
 public class ClientGUI extends JComponent implements Runnable {
     Tools tools = new Tools();
@@ -1005,7 +1003,7 @@ public class ClientGUI extends JComponent implements Runnable {
         teacherMenuOptions = new JComboBox();
         teacherMenuOptions.addItem("Create quiz");
         teacherMenuOptions.addItem("Delete quiz");
-        teacherMenuOptions.addItem("Modify quiz");
+        teacherMenuOptions.addItem("");
         teacherMenuOptions.addItem("View student submissions");
         teacherMenuOptions.addItem("Edit question pool");
         teacherMenuOptions.addItem("Modify account");
@@ -1052,7 +1050,7 @@ public class ClientGUI extends JComponent implements Runnable {
         questionPoolOptions = new JComboBox();
         questionPoolOptions.addItem("Add question");
         questionPoolOptions.addItem("Delete question");
-        questionPoolOptions.addItem("Modify question");
+        questionPoolOptions.addItem("");
         questionPoolSelect = new JButton("Select");
 
         questionPoolPanel.add(questionPoolPrompt);
