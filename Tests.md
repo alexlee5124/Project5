@@ -6,7 +6,9 @@
 5. Click the “Log in” button and enter an arbitrary username to try to log in. Because you haven’t created any accounts yet, it will show an error message. 
 6. Click the “Create Account” button and create a new account. Make sure to distinguish between a teacher account and a student account, which can be chosen from the option bar. 
 7. After you’ve done so, log in again using the account you just created. To test concurrency, try creating an account from one window and logging in on another window.
-Expected Result:
+
+Expected Result: Each window is fully functional meaning the server can host multiple clients simultaneously.
+
 Test Status: Passed
 
 **Test 2: Modifying and deleting accounts**
@@ -14,7 +16,9 @@ Test Status: Passed
 2. After you’ve modified your username, exit out of that window, create a new window, and log in through that window to check that the username has been modified appropriately. 
 3. Once you’ve logged back in, now choose the “Delete account” option. This will delete your account, log you out, and close the current window. 
 4. Open a new window and check that the account has been deleted.
-Expected Result:
+
+Expected Result: Users can modify their username to edit their account. They can also delete their account completely.
+
 Test Status: Passed
 
 **Test 3: Editing question pool**
@@ -32,7 +36,9 @@ Test Status: Passed
 12. Add any arbitrary question at this point to test the “Delete question” option later.
 13. Under the “Edit question pool” window, choose the delete question option this time. 
 14. In the option box, which displays the current list of questions, choose the one you’d like to delete and click the “Delete” button.
-Expected Result:
+
+Expected Result: Teachers can edit their question pool by adding new question (either free response, multiple choice, or true/false) or deleting a preexisting one. 
+
 Test Status: Passed
 
 **Test 4: Creating quizzes**
@@ -51,7 +57,9 @@ Test Status: Passed
 13. Enter more questions than the number of questions chosen (e.g. if you choose to have 2 questions on the quiz, enter “1,5,3” which would be three questions) and check to see that you get an error message.
 14. Next, enter an appropriate index and question values, but an invalid response for deadline and/or duration. Check that you get an error message.
 15. Now enter a valid response for deadline, duration, index, and question values. Each question value will determine the point value for the corresponding question. For example, if you chose “1,5,3” as your question index and “2,2,3” for question values, the quiz will have questions 1, 5, and 3 and question 1 will be worth 2 points, question 5 worth 2, and question 3 worth 3 points.
-Expected Result:
+
+Expected Result: Teachers can create either custom or random quizzes. These quizzes can have different question types, varying point values for question, and dealines.
+
 Test Status: Passed
 
 **Test 5: Taking quiz**
@@ -59,19 +67,25 @@ Test Status: Passed
 2. There should be two quizzes there: the first is the random quiz and the second is the custom quiz since we created them in that order.
 3. Choose either quiz and answer to your best abilities.
 4. If you have taken the quiz before, the program will throw an error message when you press submit.
-Expected Result:
+
+Expected Result: Students can take quizzes created by teacher accounts. These quizzes can only be taken once.
+
 Test Status: Passed
 
 **Test 6: Viewing submissions as a student**
 1. From the student menu, choose “View submissions”
 2. Enter the quiz ID that you want to view. Try entering an invalid quiz ID to see that it throws an error message.
 3. Then enter a valid quiz ID, one you’ve taken before to view the grade.
-Expected Result:
+
+Expected Result: Students can view their submissions and grades from quizzes by entering the quiz's ID. 
+
 Test Status: Passed
 
 **Test 7: View student’s submission as a teacher**
 1. Having logged in as a teacher, choose the “View student submissions.” 
 2. In the option box, select the student that you’d like to see the grade of. Enter an invalid quiz ID to check that it throws an error message.
 3. Now enter a valid quiz ID to see the student’s submission, both the timestamp and the quiz grade.
-Expected Result:
+
+Expected Result: Teachers can view student submissions and grades of a specific student by selecting a student and entering a valid quiz ID. 
+
 Test Status: Passed
