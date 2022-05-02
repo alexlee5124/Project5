@@ -566,12 +566,12 @@ public class ServerThread implements Runnable
                             quizID = 0;
                             try {
                                 quizID = Integer.parseInt(reader.readLine());
+                                String quizGrade = student.loadGrade(quizID);
+                                writer.println(quizGrade);
+                                writer.flush();
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-                            String quizGrade = student.loadGrade(quizID);
-                            writer.println(quizGrade);
-                            writer.flush();
                             break;
                         case 3:
                             System.out.println("Modifying account...");
