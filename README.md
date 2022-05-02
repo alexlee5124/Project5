@@ -1,21 +1,41 @@
 # Project 5 README.md
+
 How to Compile and Run:
 ----------------------
 Submissions:
 ----------------------
 
-Alex Lee:
+Alex Lee: Project codes to Vocareum workspace 5/2/2022
 
-Quinn Bello:
+Taylor Graham: 
 
-Taylor Graham:
+----------------------
+**HOW TO RUN**
 
-Implemented Classes:
+First make sure that all the following files are in the work folder:
+Account.java
+Student.java
+Teacher.java
+Quiz.java
+Question.java
+Tools.java
+ClientGUI.java
+Threading.java
+ServerThread.java
+ServerMain.java
+AccountInformation.txt
+Quiz.txt
+Questions.txt
+Grades.txt
+
+Run the ServerMain.java program to start the server program. Then run the Threading.java file and click the “New window” button to create a new window which implements the ClientGUI.java file. Interact with the GUI window to use this program from thereon. 
+
 ----------------------
 
-**Client.java**
+**Implemented Classes:**
 
-Client.java establishes a connection between the user and the server. Here, user input is flushed to the server.
+**Threading.java**
+The Threading.java program creates a new window each time the “New window” button is clicked. This creates a new ClientGUI thread, which then connects to the ServerMain.java program.
 
 **ClientGUI.java**
 
@@ -23,15 +43,15 @@ ClientGUI.java is our main interface to interact with the client. Here the user 
 
 **ServerMain.java**
 
-ServerMain.java establishes a connection with clients and processes their input by rerouting their data to the ServerThread class as a newClient.
+ServerMain.java runs indefinitely to establish a connection with each new client and creates a new ServerThread to process their input.
 
 **ServerThread.java**
 
-ServerThread.java receives input from clients and processes the data.
+ServerThread.java receives input from ClientGUI.java and processes the data such as grading quizzes, checking for duplicate accounts, and recording it out to a text file. 
 
 **Tools.java**
 
-Tools.java is made up of several useful functions that were used in ClientGUI.java and other classes. They were used multiple times throughout our program, so they were compiled and stored within the Tools.java class to improve readability and reliablity.
+Tools.java is made up of several useful functions that were used in ClientGUI.java and other classes. They were used multiple times throughout our program, so they were compiled and stored within the Tools.java class to improve readability and reliability.
 
 **Account.java:**
 
@@ -40,29 +60,18 @@ This class includes fields essential for the creation of an account. Teacher.jav
 This class has two fields: String username and boolean isLogged. Usernames are the only input taken to create and/or login to an account. 
 There is no password field. isLogged boolean variable keeps track of the user’s log-in status. 
 A user has to be logged in in order to perform any of its methods. 
-To test that this class works, run the main.java program, follow through with the initial menu and see that it:
-1) Creates an account with the input username and saves it out to the AccountInformation.txt file and 
-2) Allows you to log in with any of the usernames currently existing in the AccountInformation.txt file.
 
 **Teacher.java**
 
-The Teacher class is the subclass of the Account class and inherits its fields and methods. A teacher object can create, edit, 
-and delete questions from the question pool, create and delete quizzes, and view a student’s submission, along with any account methods 
-inherited from the account superclass.
-
-Following the main.java program, verify that adding a question properly stores the new question to the Question.txt file, 
+The Teacher class is the subclass of the Account class and inherits its fields and methods. A teacher object can create, edit, and delete questions from the question pool, create and delete quizzes, and view a student’s submission, along with any account methods inherited from the account superclass. Following the main  program, verify that adding a question properly stores the new question to the Question.txt file, 
 modifying a question prompt or answer updates the Question.txt file accordingly, and deleting a question removes the question from the Question.txt 
-file accordingly. A question is written out to the text file in the following format for each question, where each line in the text file is a new question: 
-“Question prompt:Question answer.”
+file accordingly. A question is written out to the text file in the following format for each question, where each line in the text file is a new question.
 
 In a similar manner, verify that creating a quiz records the quiz out to the Quiz.txt file properly. Each quiz is recorded in the following format: 
 “Quiz ID:Number of questions:[Array of question point values]: deadline YYYY-MM-DD HH:SS:duration in minutes:Total points:[Array of question indexes]. 
-The array of question indexes is utilized when loading questions from the question pool. For example, a question index of [0,3,2] will load the first, fourth, and third question from the Question.txt file. 
-This can be manually verified by taking this quiz through a student’s account. A teacher can either create a randomly produced quiz or a custom quiz. 
-The only difference between the two is that a custom quiz will take a teacher’s input for determining the quiz’s question indexes.
+The array of question indexes is utilized when loading questions from the question pool. For example, a question index of [0,3,2] will load the first, fourth, and third question from the Question.txt file. This can be manually verified by taking this quiz through a student’s account. A teacher can either create a randomly produced quiz or a custom quiz. The only difference between the two is that a custom quiz will take a teacher’s input for determining the quiz’s question indexes.
 
-To see a student’s past submissions, follow the main program to enter the student’s username and the quiz ID. The program will then retrieve this 
-information from the Grades.txt file and output it to the terminal.
+To see a student’s past submissions, follow the main program to enter the student’s username and the quiz ID. The program will then retrieve this information from the Grades.txt file and output it to the terminal.
 
 **Student.java**
 
@@ -70,8 +79,7 @@ The Student class is the subclass of the Account class and inherits its fields a
 can take any of the quizzes available and view any of the past attempt grades.
 
 To test that a student object can take any quizzes, first log in through the main program and follow the subsequent menu to take a quiz. 
-Note that the student can only take a quiz already created by a teacher account. Verify that the quiz has been loaded correctly 
-by making sure that the quiz’s question index matches up with the question pool and that the correct questions have been loaded. 
+Note that the student can only take a quiz already created by a teacher account. Verify that the quiz has been loaded correctly by making sure that the quiz’s question index matches up with the question pool and that the correct questions have been loaded. 
 Then take the quiz and make sure that the resulting grade, which will be printed out to the terminal, matches the expected grade, 
 according to the quiz’s total grade and each question’s point values.
 
@@ -93,12 +101,7 @@ To do so, three fields are used: pointValue, prompt, and answer. The gradeQuesti
 If the user's answer matches, all assigned points are rewarded, if they are incorrect, no points will be given for that specific question.
 This class's methods are used in the Quiz class to grade taken quizzes.
 
-**Main.java**
 
-Main.java acts as the implementation of all of the created classes and can also be used as the testing program. 
-Follow through with the given prompts to execute the program and verify that it works as it has been described above in the student.java and teacher.java sections. 
-All responses will be tested for validity and an invalid response will print error messages and prompt the user again for a valid response so that the program 
-can keep running without crashing. Feel free to test this feature at any point.
 
 **AccountInformation.txt**
 
@@ -113,3 +116,5 @@ Holds a student's recorded grade after taking a quiz and stores their attempt.
 
 Holds created quizzes. Takes inputted quizzes and stores them in a text file. This stops the quizzes from being lost after the program is ended.
 When a quiz is deleted, created, or modified, this is reflected through this file.
+
+
