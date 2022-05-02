@@ -1,57 +1,37 @@
 import java.io.*;
 import java.net.Socket;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Scanner;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Arrays;
-import java.util.Collections;
 
 public class ClientGUI extends JComponent implements Runnable {
-    Tools tools = new Tools();
     Socket socket = null;
     BufferedReader reader = null;
     PrintWriter writer = null;
     JFrame frame;
     Container content;
-    JFrame quizTakingFrame;
-    Container quizContent;
     JComboBox<String> teacherStudent;
-    Teacher teacher;
-    Student student;
-
-    /** QUIZ TAKING COMPONENTS */
-    int currentPage;
-    String currentAccountType = "";
-    int currentNumberOptions = 0;
-
 
 
     /** PANELS */
-    JPanel reloadPanel;
-    JPanel initialPanel; //1
-    JPanel createPanel; //2
-    JPanel logInPanel; //3
-    JPanel studentPanel; //4
-    JPanel teacherPanel; //5
-    JPanel modifyPanel; //6
-    JPanel questionPoolPanel; //7
-    JPanel addQuestionPanel; //8
-    JPanel addMultipleChoicePanel; //9
-    JPanel multipleChoiceOptionPanel; //10
-    JPanel addFreeResponsePanel; //11
-    JPanel createQuizPanel; //12
-    JPanel addTrueFalsePanel; //13
-    JPanel takeQuizPanel; //14
-    JPanel quizTakingPanel; //15
-    JPanel deleteQuestionPanel; //16
-    JPanel createRandomQuizPanel; //17
-    JPanel createCustomQuizPanel; //18
-    JPanel viewSubmissionPanel; //19
-    JPanel viewStudentSubmissionPanel; //20
-
-    /** reload button */
-    JButton reloadButton;
+    JPanel initialPanel;
+    JPanel createPanel;
+    JPanel logInPanel;
+    JPanel studentPanel;
+    JPanel teacherPanel;
+    JPanel modifyPanel;
+    JPanel questionPoolPanel;
+    JPanel addQuestionPanel;
+    JPanel addMultipleChoicePanel;
+    JPanel multipleChoiceOptionPanel;
+    JPanel addFreeResponsePanel;
+    JPanel createQuizPanel;
+    JPanel addTrueFalsePanel;
+    JPanel createRandomQuizPanel;
+    JPanel createCustomQuizPanel;
 
     /** Initial Buttons and text fields */
     JButton createButton;
@@ -68,13 +48,13 @@ public class ClientGUI extends JComponent implements Runnable {
     /** Teacher panel components */
     JLabel teacherMenuPrompt = new JLabel("What would you like to do?");
     JButton teacherMenuSelect;
-    JComboBox<String> teacherMenuOptions;
+    JComboBox<String> teacherMenuOptions= new JComboBox();
 
 
     /** Student panel components */
     JLabel studentMenuPrompt = new JLabel("What would you like to do?");
     JButton studentMenuSelect;
-    JComboBox<String> studentMenuOptions;
+    JComboBox<String> studentMenuOptions = new JComboBox();
 
     /** Modify panel components*/
     JButton modifyButtonT;
@@ -83,7 +63,7 @@ public class ClientGUI extends JComponent implements Runnable {
 
     /** Question pool panel components*/
     JLabel questionPoolPrompt = new JLabel("What would you like to do?");
-    JComboBox<String> questionPoolOptions;
+    JComboBox<String> questionPoolOptions = new JComboBox();
     JButton questionPoolSelect;
 
     /** Create Random Quiz panel components*/
@@ -93,31 +73,31 @@ public class ClientGUI extends JComponent implements Runnable {
      *  - Move from teacher to ServerThread?
      * */
     JLabel numberOfQuestionsLabel = new JLabel("Number of Questions");
-    JComboBox<Integer> numberOfQuestionsOptions;
+    JComboBox<Integer> numberOfQuestionsOptions = new JComboBox<>();
     JLabel questionValueLabel = new JLabel("How many points is each question worth?");
-    JComboBox<String> questionValueOption;
+    JTextField questionValueTextField = new JTextField(30);
     JLabel quizDeadlineLabel = new JLabel("Deadline (YYYY-MM-DD HH:MM)");
-    JTextField quizDeadlineTextField;
+    JTextField quizDeadlineTextField = new JTextField(30);
     JLabel quizDurationLabel = new JLabel("Duration (minutes)");
-    JTextField quizDurationTextField;
+    JTextField quizDurationTextField = new JTextField(30);
     JButton createRandomQuizButton = new JButton("Create Quiz");
 
     /** Create Custom Quiz panel components*/
-    JComboBox<String> questionList;
+    JComboBox<String> questionList = new JComboBox<>();
     JButton createCustomQuizButton = new JButton("Create Quiz");
-    JTextField customQuizQuestionIndexes;
-    JTextField customQuizQuestionValues;
+    JTextField customQuizQuestionIndexes = new JTextField(30);
+    JTextField customQuizQuestionValues = new JTextField(30);
 
     /** Add question panel components*/
     JLabel addQuestionPrompt = new JLabel("What is the question type?");
-    JComboBox<String> addQuestionOptions;
+    JComboBox<String> addQuestionOptions = new JComboBox();
     JButton addQuestionSelect;
 
     /** Add multiple choice panel components*/
     JLabel addMultipleChoicePrompt = new JLabel("What is the question prompt?");
     JTextField multipleChoicePromptText;
     JLabel numberMultipleChoiceOptionsPrompt = new JLabel("How many options will this question have?");
-    JComboBox<String> numberMultipleChoiceOptions;
+    JComboBox<String> numberMultipleChoiceOptions = new JComboBox();
     JButton addMultipleChoiceSelect;
     int multipleChoiceOptions;
 
@@ -125,18 +105,12 @@ public class ClientGUI extends JComponent implements Runnable {
     JLabel multipleChoiceOptionPrompt;
     JButton multipleChoiceOptionPromptSubmit;
     JTextField[] optionInputs;
-    JComboBox<String> correctAnswer;
+    JComboBox<String> correctAnswer = new JComboBox<>();
     JLabel correctAnswerPrompt = new JLabel("What is the correct option?");
-
-
-    /** Delete question panel components*/
-    JLabel deleteQuestionPrompt = new JLabel("Which question would you like to remove?");
-    JComboBox<String> deleteQuestionOptions;
-    JButton deleteQuestionSelect;
 
     /** Create quiz panel components*/
     JLabel createQuizTypePrompt = new JLabel("What kind of quiz would you like to create?");
-    JComboBox<String> createQuizType;
+    JComboBox<String> createQuizType = new JComboBox<>();
     JButton createQuizTypeSelect;
 
     /**Add free response panel components*/
@@ -146,67 +120,30 @@ public class ClientGUI extends JComponent implements Runnable {
     JTextField freeResponseAnswerText;
     JButton addFreeResponseSelect;
 
-    /** Add true false choice panel components*/
-    JLabel addTrueFalsePrompt = new JLabel("What is the question prompt?");
-    JTextField trueFalsePromptText;
-    JLabel answerTrueFalseOptionsPrompt = new JLabel("What is the correct option?");
-    JComboBox<String> trueFalseAnswerChoice;
-    JButton addTrueFalseSelect;
-
-    /** Take quiz- choose quiz panel components*/
-    JComboBox<String> chooseQuizOptions;
-    JLabel chooseQuiz = new JLabel("Choose quiz to take");
-    JButton chooseQuizSelect;
-
-    /** Take quiz - quiz taking panel components*/
-    JButton submitButton;
-    Quiz currentQuiz;
-    Question[] quizQuestions;
-    int quizResponseCounter = 0;
-    Object[] quizResponses =  new Object[40];
-
-    /** View submission panel components*/
-    JTextField submissionQuizIDInput;
-    JButton viewSubmissionSelect;
-    JLabel viewSubmissionPrompt = new JLabel("Which quiz ID would you like to view?");
-
-    /** View student submission panel components*/
-    JLabel studentSubmissionPrompt = new JLabel("Which student's submission would you like to view?");
-    JComboBox<String> studentSubmissionOptions;
-    JLabel studentSubmissionQuizPrompt =
-            new JLabel("Which quiz would you like to view?");
-    JButton studentSubmissionSelect;
-    JTextField studentSubmissionQuizInput;
-
-
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new ClientGUI());
     }
 
+    /** Add true false choice panel components*/
+    JLabel addTrueFalsePrompt = new JLabel("What is the question prompt?");
+    JTextField trueFalsePromptText;
+    JLabel answerTrueFalseOptionsPrompt = new JLabel("What is the correct option?");
+    JComboBox<String> trueFalseAnswerChoice = new JComboBox<>();
+    JButton addTrueFalseSelect;
+
     /** ACTION LISTENERS */
-
-    ActionListener reloadListener = new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == reloadButton) {
-                System.out.println("TEST 1");
-                reload();
-            }
-        }
-    };
-
-
     ActionListener initialListener = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == createButton) {
                 writer.println(1);
                 writer.flush();
                 initialPanel.setVisible(false);
-                loadCreateAccountPanel();
+                createAccount();
             } else if (e.getSource() == logInButton) {
                 writer.println(2);
                 writer.flush();
                 initialPanel.setVisible(false);
-                loadLogInPanel();
+                logIn();
             } else if (e.getSource() == exitButton) {
                 writer.println(3);
                 writer.flush();
@@ -243,6 +180,7 @@ public class ClientGUI extends JComponent implements Runnable {
                     JOptionPane.showMessageDialog(null, "Account created!",
                             "Account created",
                             JOptionPane.INFORMATION_MESSAGE);
+                    System.out.println("Account created!");
                 }
             }
         }
@@ -270,24 +208,12 @@ public class ClientGUI extends JComponent implements Runnable {
                     initialPanel.setVisible(true);
                 } else if (logged.equals("T")) {
                     if (accountType.equals("student")) {
-                        currentAccountType = "S";
-                        try {
-                            student = new Student(username, true);
-                        } catch (FileNotFoundException ex) {
-                            ex.printStackTrace();
-                        }
                         loadStudentPanel();
                         studentPanel.setVisible(true);
                         JOptionPane.showMessageDialog(null, "Student: logged in!",
                                 "Logged in",
                                 JOptionPane.INFORMATION_MESSAGE);
                     } else if (accountType.equals("teacher")) {
-                        currentAccountType = "T";
-                        try {
-                            teacher = new Teacher(username, true);
-                        } catch (FileNotFoundException ex) {
-                            ex.printStackTrace();
-                        }
                         loadTeacherPanel();
                         teacherPanel.setVisible(true);
                         JOptionPane.showMessageDialog(null, "Teacher: logged in!",
@@ -311,11 +237,11 @@ public class ClientGUI extends JComponent implements Runnable {
                         loadCreateQuizPanel();
                         break;
                     case 2:
+                        loadDeleteQuizPanel();
                         break;
                     case 3:
                         break;
                     case 4:
-                        loadViewStudentSubmissionPanel();
                         break;
                     case 5:
                         loadQuestionPoolPanel();
@@ -359,10 +285,8 @@ public class ClientGUI extends JComponent implements Runnable {
                 studentPanel.setVisible(false);
                 switch (studentSelectedOption) {
                     case 1:
-                        loadTakeQuizPanel();
                         break;
                     case 2:
-                        loadViewSubmissionPanel();
                         break;
                     case 3:
                         loadModifyPanel("S");
@@ -439,6 +363,90 @@ public class ClientGUI extends JComponent implements Runnable {
         }
     };
 
+    ActionListener deleteQuizListener = new ActionListener()
+    {
+        public void actionPerformed(ActionEvent e)
+        {
+            if (e.getSource() == quizDeleteSelect)
+            {
+                deleteQuizPanel.setVisible(false);
+                String selectedQuiz = (String) quizSelectionBox.getSelectedItem();
+                System.out.println(selectedQuiz.substring(0, selectedQuiz.indexOf(":")));
+                writer.println(selectedQuiz.substring(0, selectedQuiz.indexOf(":")));
+                writer.flush();
+
+                loadTeacherPanel();
+                JOptionPane.showMessageDialog(null, "Quiz Deleted!\n" +
+                        "Returning to Teacher Main Menu", "Deleted", JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+    };
+
+    ActionListener createRandomQuizListener = new ActionListener()
+    {
+        public void actionPerformed(ActionEvent e)
+        {
+            if (e.getSource() == createRandomQuizButton)
+            {
+                writer.println(1);
+                writer.flush();
+                createRandomQuizPanel.setVisible(false);
+                int numQuestions = numberOfQuestionsOptions.getSelectedIndex() + 1;
+                int questionValue = Integer.parseInt(questionValueTextField.getText());
+                writer.println(numQuestions);
+                writer.flush();
+                writer.println(questionValue);
+                writer.flush();
+                writer.println(quizDeadlineTextField.getText());
+                writer.flush();
+                writer.println(quizDurationTextField.getText());
+                writer.flush();
+
+                for (int i = 0; i < numQuestions; i++)
+                {
+                    writer.println(questionValue);
+                    writer.flush();
+                }
+
+                loadTeacherPanel();
+                JOptionPane.showMessageDialog(null, "Quiz Created!\n" +
+                        "Returning to Teacher Main Menu", "Created!", JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+    };
+
+    ActionListener createCustomQuizListener = new ActionListener()
+    {
+        public void actionPerformed(ActionEvent e)
+        {
+            if (e.getSource() == createCustomQuizButton)
+            {
+                writer.println(2);
+                writer.flush();
+                createCustomQuizPanel.setVisible(false);
+                int numQuestions = numberOfQuestionsOptions.getSelectedIndex() + 1;
+                writer.println(numQuestions);
+                writer.flush();
+                String[] questionIndexes = customQuizQuestionIndexes.getText().split(",");
+                for (String questionIndex : questionIndexes)
+                {
+                    writer.println(questionIndex);
+                    writer.flush();
+                }
+                writer.println(quizDeadlineTextField.getText());
+                writer.flush();
+                writer.println(quizDurationTextField.getText());
+                writer.flush();
+                writer.println(customQuizQuestionValues.getText());
+                writer.flush();
+
+                loadTeacherPanel();
+                JOptionPane.showMessageDialog(null, "Quiz Created!\n" +
+                        "Returning to Teacher Main Menu", "Created!", JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+    };
+
     ActionListener questionPoolListener = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == questionPoolSelect) {
@@ -452,30 +460,12 @@ public class ClientGUI extends JComponent implements Runnable {
                         loadAddQuestionPanel();
                         break;
                     case 2:
-                        loadDeleteQuestionPanel();
                         break;
                     case 3:
-                         break;
+                        break;
                     default:
-                         break;
+                        break;
                 }
-            }
-        }
-    };
-
-    ActionListener deleteQuestionListener = new ActionListener() {
-        public void actionPerformed(ActionEvent ae) {
-            if (ae.getSource() == deleteQuestionSelect) {
-                deleteQuestionPanel.setVisible(false);
-                int deleteOpts = deleteQuestionOptions.getSelectedIndex() + 1;
-                writer.println(deleteOpts);
-                writer.flush();
-
-                loadTeacherPanel();
-                JOptionPane.showMessageDialog(null, "Question " +
-                                "deleted!",
-                        "Question deleted",
-                        JOptionPane.INFORMATION_MESSAGE);
             }
         }
     };
@@ -491,7 +481,7 @@ public class ClientGUI extends JComponent implements Runnable {
                 switch (questionTypeOption) {
                     case 1:
                         loadAddMultipleChoicePanel();
-                         break;
+                        break;
                     case 2:
                         loadAddFreeResponsePanel();
                         break;
@@ -551,122 +541,18 @@ public class ClientGUI extends JComponent implements Runnable {
         }
     };
 
+
+
     ActionListener createQuizListener = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == createQuizTypeSelect) {
-                createQuizPanel.setVisible(false);
                 int quizType = createQuizType.getSelectedIndex() + 1;
-                writer.println(quizType);
-                writer.flush();
-                switch (quizType) {
-                    case 1:
-                        loadCreateRandomQuizPanel();
-                         break;
-                    case 2:
-                        loadCreateCustomQuizPanel();
-                        break;
-                    default:
-                        break;
-                }
+                createQuizPanel.setVisible(false);
 
-            }
-        }
-    };
-
-    ActionListener createRandomQuizListener = new ActionListener()
-    {
-        public void actionPerformed(ActionEvent e)
-        {
-            if (e.getSource() == createRandomQuizButton) {
-                createRandomQuizPanel.setVisible(false);
-
-                int numQuestions = numberOfQuestionsOptions.getSelectedIndex() + 1;
-                int questionValue = questionValueOption.getSelectedIndex() + 1;
-                writer.println(numQuestions);
-                writer.flush();
-                writer.println(questionValue);
-                writer.flush();
-                writer.println(quizDeadlineTextField.getText());
-                writer.flush();
-                writer.println(quizDurationTextField.getText());
-                writer.flush();
-
-                String flagError = null;
-                try {
-                    flagError = reader.readLine();
-                    System.out.println(flagError);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-                if (flagError.equals("T")) {
+                if (quizType == 1)
                     loadCreateRandomQuizPanel();
-                    JOptionPane.showMessageDialog(null,
-                            "Please enter valid responses!\n"
-                            , "Error", JOptionPane.ERROR_MESSAGE);
-                } else if (flagError.equals("F")) {
-                    loadTeacherPanel();
-                    JOptionPane.showMessageDialog(null, "Quiz Created!\n" +
-                            "Returning to Teacher Main Menu",
-                            "Created!", JOptionPane.INFORMATION_MESSAGE);
-                }
-            }
-        }
-    };
-
-    ActionListener createCustomQuizListener = new ActionListener()
-    {
-        public void actionPerformed(ActionEvent e)
-        {
-            if (e.getSource() == createCustomQuizButton)
-            {
-                createCustomQuizPanel.setVisible(false);
-                int numQuestions = numberOfQuestionsOptions.getSelectedIndex() + 1;
-                String questionIndexesString = customQuizQuestionIndexes.getText();
-                String[] questionIndexes = questionIndexesString.split(",");
-                String customQuizQuestionValuesString = customQuizQuestionValues.getText();
-                String[] customQuizQuestionValues =
-                        customQuizQuestionValuesString.split(",");
-                String deadlineString = quizDeadlineTextField.getText();
-                String durationString = quizDurationTextField.getText();
-
-                if (numQuestions != questionIndexes.length ||
-                        numQuestions != customQuizQuestionValues.length) {
+                if (quizType == 2)
                     loadCreateCustomQuizPanel();
-                    JOptionPane.showMessageDialog(null,
-                            "Please make sure the number of question indexes" +
-                                    "match the number of questions!\n"
-                            , "Error", JOptionPane.ERROR_MESSAGE);
-                } else {
-                    writer.println(numQuestions);
-                    writer.flush();
-                    writer.println(questionIndexesString);
-                    writer.flush();
-                    writer.println(deadlineString);
-                    writer.flush();
-                    writer.println(durationString);
-                    writer.flush();
-                    writer.println(customQuizQuestionValuesString);
-                    writer.flush();
-
-                    String flagError = null;
-                    try {
-                        flagError = reader.readLine();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                    if (flagError.equals("T")) {
-                        loadCreateCustomQuizPanel();
-                        JOptionPane.showMessageDialog(null,
-                                "Please enter valid responses!\n"
-                                , "Error", JOptionPane.ERROR_MESSAGE);
-                    } else if (flagError.equals("F")) {
-                        loadTeacherPanel();
-                        JOptionPane.showMessageDialog(null,
-                                "Quiz Created!\n" +
-                                        "Returning to Teacher Main Menu",
-                                "Created!", JOptionPane.INFORMATION_MESSAGE);
-                    }
-                }
             }
         }
     };
@@ -684,8 +570,6 @@ public class ClientGUI extends JComponent implements Runnable {
                 writer.flush();
 
                 loadTeacherPanel();
-                JOptionPane.showMessageDialog(null, "Free response question added!"
-                        , "Question added", JOptionPane.INFORMATION_MESSAGE);
             }
         }
     };
@@ -704,198 +588,17 @@ public class ClientGUI extends JComponent implements Runnable {
                 JOptionPane.showMessageDialog(null, "Question added!\n" +
                         "Returning to Teacher Main Menu", "Added!", JOptionPane.INFORMATION_MESSAGE);
             }
-    }
-};
-
-    ActionListener takeQuizListener = new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == chooseQuizSelect) {
-                takeQuizPanel.setVisible(false);
-                int quizID = Integer.parseInt((String) chooseQuizOptions.getSelectedItem());
-                System.out.printf("TEST QUIZ %d\n", quizID);
-                writer.println(quizID);
-                writer.flush();
-                loadQuizTakingFrame(quizID);
-            }
         }
     };
 
-    ActionListener quizTakingListener = new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == submitButton) {
-                String[] responses = new String[currentQuiz.getNumberQuestions()];
-                for (int i = 0 ; i < responses.length ; i++) {
-                    if (quizQuestions[i].getType().equals("M")) {
-                        responses[i] = String.valueOf(
-                                ((JComboBox<String>) quizResponses[quizResponseCounter]).getSelectedIndex() + 1);
-                        quizResponseCounter++;
-                    } else if (quizQuestions[i].getType().equals("TF")) {
-                        responses[i] = String.valueOf(
-                                ((JComboBox<String>) quizResponses[quizResponseCounter]).getSelectedItem());
-                        if (responses[i].equals("True")) {
-                            responses[i] = "T";
-                        } else if (responses[i].equals("false")) {
-                            responses[i] = "F";
-                        }
-                        quizResponseCounter++;
-                    } else if (quizQuestions[i].getType().equals("R")) {
-                        responses[i] = String.valueOf(
-                                ((JTextField) quizResponses[quizResponseCounter]).getText());
-                        quizResponseCounter++;
-                    }
-                }
-                quizResponseCounter = 0;
-                for (int i = 0 ; i < responses.length; i++) {
-                    System.out.println(responses[i]);
-                    writer.println(responses[i]);
-                    writer.flush();
-                }
-                quizTakingFrame.dispose();
-                loadStudentPanel();
-                JOptionPane.showMessageDialog(null, "Quiz submitted!"
-                        , "Quiz submitted", JOptionPane.INFORMATION_MESSAGE);
-            }
-        }
-    };
-
-    ActionListener viewSubmissionListener = new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == viewSubmissionSelect) {
-                viewSubmissionPanel.setVisible(false);
-                String quizIDString = submissionQuizIDInput.getText();
-                int quizID;
-                loadStudentPanel();
-                boolean flag = false;
-                try {
-                    quizID = Integer.parseInt(quizIDString);
-                    writer.println(quizID);
-                    writer.flush();
-                } catch  (Exception exc) {
-                    writer.println("0");
-                    writer.flush();
-                    loadStudentPanel();
-                    JOptionPane.showMessageDialog(null, "This quiz ID doesn't exist" +
-                                    "or you didn't enter a valid ID!", "ERROR", JOptionPane.ERROR_MESSAGE);
-                    flag = true;
-                }
-                String grade = null;
-                try {
-                    grade = reader.readLine();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-                System.out.println(grade);
-                if (grade.equals("null") && !flag) {
-                    JOptionPane.showMessageDialog(null, "You haven't taken this quiz yet."
-                            , "Grade", JOptionPane.
-                                    INFORMATION_MESSAGE);
-                } else if (!grade.equals("null")){
-                    JOptionPane.showMessageDialog(null, grade + "%"
-                            , "Grade", JOptionPane.
-                                    INFORMATION_MESSAGE);
-                }
-            }
-        }
-    };
-
-    ActionListener studentSubmissionListener = new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == studentSubmissionSelect) {
-                viewStudentSubmissionPanel.setVisible(false);
-                loadTeacherPanel();
-                String username = (String) studentSubmissionOptions.getSelectedItem();
-                String quizIDString = studentSubmissionQuizInput.getText();
-                try {
-                    int quizID = Integer.parseInt(quizIDString);
-                    writer.println(username);
-                    writer.flush();
-                    writer.println(quizID);
-                    writer.flush();
-
-                    String grade = reader.readLine();
-                    String timestamp = reader.readLine();
-
-                    if (grade.equals("Failure")) {
-                        JOptionPane.showMessageDialog(null,
-                                "The student didn't take this quiz",
-                                "Message", JOptionPane.INFORMATION_MESSAGE);
-                    } else {
-                        JOptionPane.showMessageDialog(null,
-                                "Submitted: " + timestamp + "  Grade: " + grade,
-                                "Grade", JOptionPane.INFORMATION_MESSAGE);
-                    }
-
-                } catch (Exception ex) {
-                    writer.println("null");
-                    writer.flush();
-                    writer.println(0);
-                    writer.flush();
-                    JOptionPane.showMessageDialog(null, "This quiz ID doesn't exist" +
-                            "or you didn't enter a valid ID!", "ERROR", JOptionPane.ERROR_MESSAGE);
-                    try {
-                        reader.readLine();
-                        reader.readLine();
-                    } catch (IOException exc) {
-                        exc.printStackTrace();
-                    }
-                }
-            }
-        }
-    };
 
     /** ACTION LISTENERS */
 
+
+
     /** LOAD PANELS */
-    public void reload() {
-        System.out.println(currentPage);
-        switch (currentPage) {
-            case 9:
-                loadAddMultipleChoicePanel();
-                break;
-            case 10:
-                loadMultipleChoiceOptionPanel(currentNumberOptions);
-                break;
-            case 11:
-                loadAddFreeResponsePanel();
-                break;
-            case 12:
-                loadCreateQuizPanel();
-                break;
-            case 13:
-                loadTrueFalsePanel();
-                break;
-            case 14:
-                takeQuizPanel.setVisible(false);
-                reloadPanel.setVisible(false);
-                loadTakeQuizPanel();
-                break;
-            default:
-                break;
-        }
-    }
 
-    public void loadInitialPanel() {
-        currentPage = 1;
-
-        initialPanel = new JPanel();
-        JLabel initialPrompt = new JLabel("Please select an option.");
-        createButton = new JButton("Create Account");
-        logInButton = new JButton("Log In");
-        exitButton = new JButton("Exit");
-        initialPanel.add(initialPrompt);
-        initialPanel.add(createButton);
-        initialPanel.add(logInButton);
-        initialPanel.add(exitButton);
-        createButton.addActionListener(initialListener);
-        logInButton.addActionListener(initialListener);
-        exitButton.addActionListener(initialListener);
-
-        initialPanel.setVisible(true);
-    }
-
-    public void loadCreateAccountPanel() {
-        currentPage = 2;
-
+    public void createAccount() {
         createPanel = new JPanel();
         JLabel createLabel = new JLabel("Please enter a new username.");
         createButton2 = new JButton("Create account");
@@ -908,14 +611,11 @@ public class ClientGUI extends JComponent implements Runnable {
         createPanel.add(teacherStudent);
         createPanel.add(createButton2);
         createButton2.addActionListener(createListener);
-
         content.add(createPanel, BorderLayout.CENTER);
         createPanel.setVisible(true);
     }
 
-    public void loadLogInPanel() {
-        currentPage = 3;
-
+    public void logIn() {
         logInPanel = new JPanel();
         JLabel logInLabel = new JLabel("Please enter your username.");
         logInButton2 = new JButton("Log in");
@@ -926,55 +626,13 @@ public class ClientGUI extends JComponent implements Runnable {
         logInPanel.add(logInButton2);
         logInButton2.addActionListener(logInListener);
 
-        /** go back & reload panel
-        reloadPanel = new JPanel();
-        JButton reloadButton = new JButton("Reload");
-        reloadPanel.add(reloadButton);
-        reloadButton.addActionListener(reloadListener);
-        content.add(reloadPanel, BorderLayout.SOUTH);
-        reloadPanel.setVisible(true);
-         */
-
         content.add(logInPanel, BorderLayout.CENTER);
         logInPanel.setVisible(true);
     }
 
-    public void loadStudentPanel() {
-        currentPage = 4;
-
-        studentPanel = new JPanel();
-        studentMenuOptions = new JComboBox();
-        studentMenuOptions.addItem("Take quiz");
-        studentMenuOptions.addItem("View submissions");
-        studentMenuOptions.addItem("Modify account");
-        studentMenuOptions.addItem("Delete account");
-        studentMenuSelect = new JButton("Select");
-
-        studentPanel.add(studentMenuPrompt);
-        studentPanel.add(studentMenuOptions);
-        studentPanel.add(studentMenuSelect);
-        studentPanel.add(exitButton);
-
-        studentMenuSelect.addActionListener(studentListener);
-        content.add(studentPanel, BorderLayout.CENTER);
-        studentPanel.setVisible(true);
-
-    }
-
     public void loadTeacherPanel() {
-        currentPage = 5;
-
         teacherPanel = new JPanel();
         teacherMenuSelect = new JButton("Select");
-
-        teacherMenuOptions = new JComboBox();
-        teacherMenuOptions.addItem("Create quiz");
-        teacherMenuOptions.addItem("Delete quiz");
-        teacherMenuOptions.addItem("Modify quiz");
-        teacherMenuOptions.addItem("View student submissions");
-        teacherMenuOptions.addItem("Edit question pool");
-        teacherMenuOptions.addItem("Modify account");
-        teacherMenuOptions.addItem("Delete account");
 
         teacherPanel.add(teacherMenuPrompt);
         teacherPanel.add(teacherMenuOptions);
@@ -988,8 +646,6 @@ public class ClientGUI extends JComponent implements Runnable {
     }
 
     public void loadModifyPanel(String type) {
-        currentPage = 6;
-
         modifyPanel = new JPanel();
         usernameText = new JTextField(20);
 
@@ -1009,12 +665,51 @@ public class ClientGUI extends JComponent implements Runnable {
         modifyPanel.setVisible(true);
     }
 
+    public void loadStudentPanel() {
+        studentPanel = new JPanel();
+        studentMenuOptions.addItem("Take quiz");
+        studentMenuOptions.addItem("View submissions");
+        studentMenuOptions.addItem("Modify account");
+        studentMenuOptions.addItem("Delete account");
+        studentMenuSelect = new JButton("Select");
+
+        studentPanel.add(studentMenuPrompt);
+        studentPanel.add(studentMenuOptions);
+        studentPanel.add(studentMenuSelect);
+        studentPanel.add(exitButton);
+
+        studentMenuSelect.addActionListener(studentListener);
+
+        content.add(studentPanel, BorderLayout.CENTER);
+        studentPanel.setVisible(true);
+
+    }
+
+    JComboBox<String> quizSelectionBox = new JComboBox<>();
+    JPanel deleteQuizPanel;
+    JButton quizDeleteSelect;
+
+    public void loadDeleteQuizPanel()
+    {
+        deleteQuizPanel = new JPanel();
+
+        Tools tools = new Tools();
+        ArrayList<String> quizList = tools.getQuizList();
+
+        for (String quiz : quizList)
+            quizSelectionBox.addItem(quiz);
+
+        quizDeleteSelect = new JButton("Select");
+        deleteQuizPanel.add(new JLabel("Select a quiz to delete"));
+        deleteQuizPanel.add(quizSelectionBox);
+        quizDeleteSelect.addActionListener(deleteQuizListener);
+        deleteQuizPanel.add(quizDeleteSelect);
+        content.add(deleteQuizPanel, BorderLayout.CENTER);
+        deleteQuizPanel.setVisible(true);
+    }
 
     public void loadQuestionPoolPanel() {
-        currentPage = 7;
-
         questionPoolPanel = new JPanel();
-        questionPoolOptions = new JComboBox();
         questionPoolOptions.addItem("Add question");
         questionPoolOptions.addItem("Delete question");
         questionPoolOptions.addItem("Modify question");
@@ -1031,11 +726,8 @@ public class ClientGUI extends JComponent implements Runnable {
     }
 
     public void loadAddQuestionPanel() {
-        currentPage = 8;
-
         addQuestionPanel = new JPanel();
 
-        addQuestionOptions = new JComboBox();
         addQuestionOptions.addItem("Multiple choice");
         addQuestionOptions.addItem("Free response");
         addQuestionOptions.addItem("True/False");
@@ -1050,39 +742,10 @@ public class ClientGUI extends JComponent implements Runnable {
         addQuestionPanel.setVisible(true);
     }
 
-    public void loadDeleteQuestionPanel() {
-        deleteQuestionPanel = new JPanel();
-
-        ArrayList<String> questions = tools.getQuestionList();
-
-        deleteQuestionOptions = new JComboBox();
-        for(String question: questions)
-            if (question.split(",")[2].equals("M")) {
-                System.out.println("TEST POINT 6");
-                deleteQuestionOptions.addItem(question.split(",")[0].split(":")[0]);
-            } else {
-                deleteQuestionOptions.addItem(question.split(",")[0]);
-            }
-
-
-        deleteQuestionSelect = new JButton("Delete");
-        deleteQuestionSelect.addActionListener(deleteQuestionListener);
-
-        deleteQuestionPanel.add(deleteQuestionPrompt);
-        deleteQuestionPanel.add(deleteQuestionOptions);
-        deleteQuestionPanel.add(deleteQuestionSelect);
-
-        content.add(deleteQuestionPanel, BorderLayout.CENTER);
-        deleteQuestionPanel.setVisible(true);
-    }
-
     public void loadAddMultipleChoicePanel() {
-        currentPage = 9;
-
         addMultipleChoicePanel = new JPanel();
 
         multipleChoicePromptText = new JTextField(30);
-        numberMultipleChoiceOptions = new JComboBox();
         numberMultipleChoiceOptions.addItem("1");
         numberMultipleChoiceOptions.addItem("2");
         numberMultipleChoiceOptions.addItem("3");
@@ -1101,12 +764,9 @@ public class ClientGUI extends JComponent implements Runnable {
     }
 
     public void loadMultipleChoiceOptionPanel(int numberOptions) {
-        currentPage = 10;
-
         multipleChoiceOptionPanel = new JPanel();
         multipleChoiceOptionPanel.setLayout(new GridLayout(numberOptions + 20, 2));
         optionInputs = new JTextField[numberOptions];
-        correctAnswer = new JComboBox<>();
 
         for (int i = 0 ; i < numberOptions ; i++) {
             String multipleChoiceOptionPanelPrompt = String.format("What will be the option prompt for option %d?",
@@ -1130,13 +790,7 @@ public class ClientGUI extends JComponent implements Runnable {
     }
 
     public void loadCreateQuizPanel() {
-        currentPage = 12;
-
         createQuizPanel = new JPanel();
-
-        createQuizType = new JComboBox<>();
-        createQuizType.addItem("Random quiz");
-        createQuizType.addItem("Custom quiz");
 
         createQuizTypeSelect = new JButton("Select");
         createQuizTypeSelect.addActionListener(createQuizListener);
@@ -1149,29 +803,21 @@ public class ClientGUI extends JComponent implements Runnable {
         createQuizPanel.setVisible(true);
     }
 
-    public void loadCreateRandomQuizPanel() {
+    public void loadCreateRandomQuizPanel()
+    {
+        Tools tools = new Tools();
         createRandomQuizPanel = new JPanel();
-        createRandomQuizPanel.setLayout(new GridLayout(36, 1));
-
-        questionValueOption = new JComboBox<>();
-        questionValueOption.addItem("1");
-        questionValueOption.addItem("2");
-        questionValueOption.addItem("3");
-        questionValueOption.addItem("4");
-        questionValueOption.addItem("5");
+        createRandomQuizPanel.setLayout(new GridLayout(0, 1));
+        createRandomQuizButton.addActionListener(createRandomQuizListener);
         createRandomQuizPanel.add(numberOfQuestionsLabel);
-
-        numberOfQuestionsOptions = new JComboBox<>();
         for (int i = 0; i < tools.getQuestionPoolSize(); i++)
             numberOfQuestionsOptions.addItem(i + 1);
         createRandomQuizPanel.add(numberOfQuestionsOptions);
         createRandomQuizPanel.add(questionValueLabel);
-        createRandomQuizPanel.add(questionValueOption);
+        createRandomQuizPanel.add(questionValueTextField);
         createRandomQuizPanel.add(quizDeadlineLabel);
-        quizDeadlineTextField = new JTextField(30);
         createRandomQuizPanel.add(quizDeadlineTextField);
         createRandomQuizPanel.add(quizDurationLabel);
-        quizDurationTextField = new JTextField(30);
         createRandomQuizPanel.add(quizDurationTextField);
         createRandomQuizPanel.add(createRandomQuizButton);
 
@@ -1179,37 +825,28 @@ public class ClientGUI extends JComponent implements Runnable {
         createRandomQuizPanel.setVisible(true);
     }
 
-    public void loadCreateCustomQuizPanel() {
+    public void loadCreateCustomQuizPanel()
+    {
+        Tools tools = new Tools();
         createCustomQuizPanel = new JPanel();
-        createCustomQuizPanel.setLayout(new GridLayout(36, 1));
-
+        createCustomQuizPanel.setLayout(new GridLayout(0, 1));
+        createCustomQuizButton.addActionListener(createCustomQuizListener);
         createCustomQuizPanel.add(numberOfQuestionsLabel);
-        numberOfQuestionsOptions = new JComboBox<>();
         for (int i = 0; i < tools.getQuestionPoolSize(); i++)
             numberOfQuestionsOptions.addItem(i + 1);
         createCustomQuizPanel.add(numberOfQuestionsOptions);
         createCustomQuizPanel.add(quizDeadlineLabel);
-        quizDeadlineTextField = new JTextField(30);
         createCustomQuizPanel.add(quizDeadlineTextField);
         createCustomQuizPanel.add(quizDurationLabel);
-        quizDurationTextField = new JTextField(30);
         createCustomQuizPanel.add(quizDurationTextField);
-        questionList = new JComboBox<>();
         ArrayList<String> questions = tools.getQuestionList();
+        int qIndex = 0;
 
-        int qIndex = 1;
-        for(String question: questions)
-            if (question.split(",")[2].equals("M")) {
-                questionList.addItem(qIndex + ": " +
-                        question.split(",")[0].split(":")[0]);
-                qIndex++;
-            } else {
-                questionList.addItem(qIndex + ": " +
-                        question.split(",")[0]);
-                qIndex++;
-            }
-        customQuizQuestionIndexes = new JTextField(30);
-        customQuizQuestionValues = new JTextField(30);
+        for (String question : questions)
+        {
+            questionList.addItem(qIndex + ": " + question);
+            qIndex++;
+        }
 
         createCustomQuizPanel.add(new JLabel("Full list of Questions for reference: "));
         createCustomQuizPanel.add(questionList);
@@ -1221,17 +858,13 @@ public class ClientGUI extends JComponent implements Runnable {
 
         content.add(createCustomQuizPanel);
         createCustomQuizPanel.setVisible(true);
+
     }
 
-
-
     public void loadAddFreeResponsePanel() {
-        currentPage = 11;
-
         addFreeResponsePanel = new JPanel();
-        addFreeResponsePanel.setLayout(new GridLayout(28, 1));
 
-        freeResponsePromptText = new JTextField(40);
+        freeResponsePromptText = new JTextField(30);
         freeResponseAnswerText = new JTextField(30);
         addFreeResponseSelect = new JButton("Add");
         addFreeResponseSelect.addActionListener(addFreeResponseListener);
@@ -1247,12 +880,9 @@ public class ClientGUI extends JComponent implements Runnable {
     }
 
     public void loadTrueFalsePanel() {
-        currentPage = 13;
-
         addTrueFalsePanel = new JPanel();
 
         trueFalsePromptText = new JTextField(30);
-        trueFalseAnswerChoice = new JComboBox<>();
         trueFalseAnswerChoice.addItem("T");
         trueFalseAnswerChoice.addItem("F");
         addTrueFalseSelect = new JButton("Add");
@@ -1268,152 +898,31 @@ public class ClientGUI extends JComponent implements Runnable {
         addTrueFalsePanel.setVisible(true);
     }
 
-    public void loadTakeQuizPanel() {
-        currentPage = 14;
-
-        takeQuizPanel = new JPanel();
-
-        chooseQuizSelect = new JButton("Select");
-        chooseQuizSelect.addActionListener(takeQuizListener);
-
-        chooseQuizOptions = new JComboBox<>();
-        int[] quizIDs = tools.retrieveQuizIDs();
-        for (int i = 0 ; i < quizIDs.length ; i++) {
-            chooseQuizOptions.addItem(String.valueOf(quizIDs[i]));
-        }
-
-        takeQuizPanel.add(chooseQuiz);
-        takeQuizPanel.add(chooseQuizOptions);
-        takeQuizPanel.add(chooseQuizSelect);
-
-        reloadPanel = new JPanel();
-        reloadPanel.add(reloadButton);
-        content.add(reloadPanel, BorderLayout.SOUTH);
-        reloadPanel.setVisible(true);
-
-        content.add(takeQuizPanel, BorderLayout.CENTER);
-        takeQuizPanel.setVisible(true);
-    }
 
 
-    public void loadQuizTakingFrame(int quizID) {
-        /** create JFrame and title */
-        quizTakingFrame = new JFrame();
-        quizTakingFrame.setTitle("QUIZ");
-        quizTakingFrame.setSize(1000, 1000);
-        quizTakingFrame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-        quizTakingFrame.setLocationRelativeTo(null);
-
-        /** Create frame and set it visible*/
-        quizContent = quizTakingFrame.getContentPane();
-        quizContent.setLayout(new BorderLayout());
-
-        quizTakingFrame.setVisible(true);
-        quizTakingPanel = new JPanel();
-        quizTakingPanel.setLayout(new GridLayout(30, 2));
-
-        currentQuiz = student.loadQuiz(quizID);
-        quizQuestions = currentQuiz.loadQuizQuestions();
-
-        /** Quiz Info Panel */
-        JPanel quizInfoPanel = new JPanel();
-        quizInfoPanel.setLayout(new GridLayout(5, 1));
-        JLabel quizIDInfo = new JLabel("Quiz number: " + currentQuiz.getQuizID());
-        JLabel numberQuestionsInfo = new JLabel("Number of questions: " +
-                currentQuiz.getNumberQuestions());
-        JLabel deadlineInfo = new JLabel("Quiz deadline: " +
-                currentQuiz.getDeadline());
-        JLabel durationInfo = new JLabel("Quiz duration: " +
-                currentQuiz.getDuration());
-        JLabel totalPointsInfo = new JLabel("Quiz total points: " +
-                currentQuiz.getTotalPoints());
-        quizInfoPanel.add(quizIDInfo);
-        quizInfoPanel.add(numberQuestionsInfo);
-        quizInfoPanel.add(deadlineInfo);
-        quizInfoPanel.add(durationInfo);
-        quizInfoPanel.add(totalPointsInfo);
-
-        quizContent.add(quizInfoPanel, BorderLayout.NORTH);
-        quizInfoPanel.setVisible(true);
-
-        /** Quiz Questions Panel */
-        JPanel quizTakingQuestionsPanel = new JPanel();
-        quizTakingQuestionsPanel.setLayout(new GridLayout(20, 2));
-        for (int i = 0 ; i < quizQuestions.length ; i++) {
-            JLabel questionPrompt = new JLabel(quizQuestions[i].getPrompt());
-            quizTakingQuestionsPanel.add(questionPrompt);
-            if (quizQuestions[i].getType().equals("R")) {
-                JTextField response = new JTextField(30);
-                quizResponses[quizResponseCounter] = response;
-                quizResponseCounter++;
-                quizTakingQuestionsPanel.add(response);
-            } else if (quizQuestions[i].getType().equals("TF")) {
-                JComboBox<String> response = new JComboBox<>();
-                response.addItem("True");
-                response.addItem("False");
-                quizResponses[quizResponseCounter] = response;
-                quizResponseCounter++;
-                quizTakingQuestionsPanel.add(response);
-            } else if (quizQuestions[i].getType().equals("M")) {
-                String[] options = quizQuestions[i].getMultipleOptions();
-                JComboBox<String> response = new JComboBox<>();
-                for (int j = 0 ; j < options.length ; j++) {
-                    response.addItem(options[j]);
-                }
-                quizResponses[quizResponseCounter] = response;
-                quizResponseCounter++;
-                quizTakingQuestionsPanel.add(response);
-            }
-        }
-        quizResponseCounter = 0;
-        submitButton = new JButton("Submit quiz");
-        quizTakingQuestionsPanel.add(submitButton);
-        submitButton.addActionListener(quizTakingListener);
-        quizContent.add(quizTakingQuestionsPanel, BorderLayout.SOUTH);
-        quizTakingQuestionsPanel.setVisible(true);
-
-    }
-
-    public void loadViewSubmissionPanel() {
-        viewSubmissionPanel = new JPanel();
-
-        submissionQuizIDInput = new JTextField(5);
-        viewSubmissionSelect = new JButton("Select");
-        viewSubmissionSelect.addActionListener(viewSubmissionListener);
-
-        viewSubmissionPanel.add(viewSubmissionPrompt);
-        viewSubmissionPanel.add(submissionQuizIDInput);
-        viewSubmissionPanel.add(viewSubmissionSelect);
-
-        content.add(viewSubmissionPanel, BorderLayout.CENTER);
-        viewSubmissionPanel.setVisible(true);
-
-    }
-
-    public void loadViewStudentSubmissionPanel(){
-        viewStudentSubmissionPanel = new JPanel();
-
-        studentSubmissionSelect = new JButton("Select");
-        studentSubmissionSelect.addActionListener(studentSubmissionListener);
-        String[] studentUsernames = teacher.loadStudentSubmissionsUsername();
-        studentSubmissionOptions = new JComboBox<String>();
-        for (int i = 0 ; i < studentUsernames.length ; i++) {
-            studentSubmissionOptions.addItem(studentUsernames[i]);
-        }
-        studentSubmissionQuizInput = new JTextField(5);
-
-        viewStudentSubmissionPanel.add(studentSubmissionPrompt);
-        viewStudentSubmissionPanel.add(studentSubmissionOptions);
-        viewStudentSubmissionPanel.add(studentSubmissionQuizPrompt);
-        viewStudentSubmissionPanel.add(studentSubmissionQuizInput);
-        viewStudentSubmissionPanel.add(studentSubmissionSelect);
-
-        content.add(viewStudentSubmissionPanel, BorderLayout.CENTER);
-        viewStudentSubmissionPanel.setVisible(true);
-    }
-        /** LOAD PANELS */
+    /** LOAD PANELS */
 
     public void run() {
+        /** Combo box Items */
+
+
+        /** teacher panel combo box */
+        teacherMenuOptions.addItem("Create quiz");
+        teacherMenuOptions.addItem("Delete quiz");
+        teacherMenuOptions.addItem("Modify quiz");
+        teacherMenuOptions.addItem("View student submissions");
+        teacherMenuOptions.addItem("Edit question pool");
+        teacherMenuOptions.addItem("Modify account");
+        teacherMenuOptions.addItem("Delete account");
+
+        /** create quiz panel combo box */
+        createQuizType.addItem("Random quiz");
+        createQuizType.addItem("Custom quiz");
+
+
+
+        /** Combo box Items */
+
 
         String hostname = "localhost";
         int port = 4242;
@@ -1426,7 +935,6 @@ public class ClientGUI extends JComponent implements Runnable {
             e.printStackTrace();
         }
 
-
         /** create JFrame and title */
         frame = new JFrame();
         frame.setTitle("Quiz");
@@ -1434,20 +942,26 @@ public class ClientGUI extends JComponent implements Runnable {
         frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
-        /** Create frame and set it visible*/
+        /** Initial Panel */
+        initialPanel = new JPanel();
+        JLabel initialPrompt = new JLabel("Please select an option.");
+        createButton = new JButton("Create Account");
+        logInButton = new JButton("Log In");
+        exitButton = new JButton("Exit");
+        initialPanel.add(initialPrompt);
+        initialPanel.add(createButton);
+        initialPanel.add(logInButton);
+        initialPanel.add(exitButton);
+        createButton.addActionListener(initialListener);
+        logInButton.addActionListener(initialListener);
+        exitButton.addActionListener(initialListener);
+
+        /** Create content and add paint object to it */
         content = frame.getContentPane();
         content.setLayout(new BorderLayout());
-        loadInitialPanel();
         content.add(initialPanel, BorderLayout.CENTER);
-
-        /** reload buttons */
-        reloadButton = new JButton("Reload");
-        reloadButton.addActionListener(reloadListener);
 
         frame.setVisible(true);
 
-        /** RANDOM AND CUSTOM QUIZ BUTTON ACTION LISTENER*/
-        createRandomQuizButton.addActionListener(createRandomQuizListener);
-        createCustomQuizButton.addActionListener(createCustomQuizListener);
     }
 }
