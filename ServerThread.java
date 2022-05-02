@@ -258,12 +258,8 @@ public class ServerThread implements Runnable
                             boolean deleted = teacher.deleteQuiz(quizID);
                             if (deleted) {
                                 System.out.println("Quiz deleted.");
-                                writer.println("Success");
-                                writer.flush();
                             } else {
                                 System.out.println("Quiz doesn't exist.");
-                                writer.println("Failure");
-                                writer.flush();
                             }
                             break;
                         case 3:
@@ -278,11 +274,7 @@ public class ServerThread implements Runnable
                                 }
                                 quiz = teacher.findQuiz(quizID);
                                 if (quiz == null) {
-                                    writer.println("Failure");
-                                    writer.flush();
                                 } else {
-                                    writer.println("Success");
-                                    writer.flush();
 
                                     int modifyQuizOption = 0;
                                     try {
@@ -305,8 +297,6 @@ public class ServerThread implements Runnable
                                             }
                                             quiz.setQuestionsIndex(newQuestionIndexes);
                                             teacher.overwriteQuiz(quiz.getQuizID(), quiz);
-                                            writer.println("Success");
-                                            writer.flush();
                                             break;
                                         case 2:
                                             System.out.println("Modifying question point values...");
@@ -322,8 +312,6 @@ public class ServerThread implements Runnable
                                             }
                                             quiz.setQuestionPoints(questionPoints);
                                             teacher.overwriteQuiz(quiz.getQuizID(), quiz);
-                                            writer.println("Success");
-                                            writer.flush();
                                             break;
                                         case 3:
                                             do {
@@ -340,8 +328,6 @@ public class ServerThread implements Runnable
                                                     deadline = LocalDateTime.parse(newDeadline, deadlineFormat);
                                                     quiz.setDeadline(deadline);
                                                     teacher.overwriteQuiz(quiz.getQuizID(), quiz);
-                                                    writer.println("Success");
-                                                    writer.flush();
                                                 } catch (Exception e) {
                                                     System.out.println("Invalid deadline response!");
                                                     System.out.println("Prompting user again.");
@@ -360,8 +346,6 @@ public class ServerThread implements Runnable
                                             }
                                             quiz.setDuration(duration);
                                             teacher.overwriteQuiz(quiz.getQuizID(), quiz);
-                                            writer.println("Success");
-                                            writer.flush();
                                             break;
                                         case 5:
                                             break;
@@ -439,8 +423,6 @@ public class ServerThread implements Runnable
                                                 e.printStackTrace();
                                             }
                                             teacher.addMultipleQuestion(prompt, answer, optionPrompts);
-                                            writer.println("Success");
-                                            writer.flush();
                                             break;
                                         case 2:
                                             System.out.println("Adding a response question...");
@@ -453,8 +435,6 @@ public class ServerThread implements Runnable
                                                 e.printStackTrace();
                                             }
                                             teacher.addResponseQuestion(prompt, answer);
-                                            writer.println("Success");
-                                            writer.flush();
                                             break;
                                         case 3:
                                             System.out.println("Adding a true/false question...");
@@ -467,8 +447,6 @@ public class ServerThread implements Runnable
                                                 e.printStackTrace();
                                             }
                                             teacher.addTrueFalseQuestion(prompt, answer);
-                                            writer.println("Success");
-                                            writer.flush();
                                             break;
                                         default:
                                             break;
@@ -560,7 +538,15 @@ public class ServerThread implements Runnable
                             }
                             float grade = quiz.gradeQuiz(responses);
                             LocalDateTime timestamp = LocalDateTime.now();
-                            student.recordGrade(grade, quizID, timestamp);
+                            boolean takenBefore =
+                                    student.recordGrade(grade, quizID, timestamp);
+                            if (takenBefore) {
+                                writer.println("T");
+                                writer.flush();
+                            } else {
+                                writer.println("F");
+                                writer.flush();
+                            }
                             break;
                         case 2:
                             quizID = 0;
